@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+    # PHP service
+    app:
+        build: ./docker/php/.
+        container_name: taskory-php
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        networks:
+            - taskory-network
+
+    # Nginx service
+    nginx:
+        image: nginx:alpine
+        container_name: taskory-nginx
+        working_dir: /var/www/html
+        ports:
+            - 8001:80
+        volumes:
+            - .:/var/www/html
+            - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+        networks:
+            - taskory-network
+
+    # Mysql service
+    mysql:
+        image: mysql:5.7.22
+        container_name: taskory-mysql
+        restart: always
+        environment:
+            - MYSQL_DATABASE=dev
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_USER=app
+            - MYSQL_PASSWORD=apppass
+        volumes:
+            - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+        ports:
+            - 8982:3306
+        networks:
+            - taskory-network
+
+networks:
+    taskory-network:
+        driver: bridge
