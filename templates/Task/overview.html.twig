@@ -1,0 +1,23 @@
+{% include 'base.html.twig' %}
+
+{% block body %}
+	<table style="margin-bottom: 50px">
+		<thead>
+			<tr>
+				<td>id</td>
+				<td>name</td>
+				<td>action</td>
+			</tr>
+		</thead>
+		<tbody>
+		{% for task in tasks %}
+			<tr>
+				<td>{{ task.id }}</td>
+				<td>{{ task.name }}</td>
+				<td><a href="{{ path('task_overview', {task: task.id}) }}">edit</a> {{ form(task_delete_forms[task.id], {attr: {action: path('task_delete', {task: task.id}), class: 'form-delete' }}) }}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	{{ form(task_form) }}
+{% endblock %}

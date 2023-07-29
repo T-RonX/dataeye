@@ -4,9 +4,23 @@
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <style>
+            form.form-delete, form.form-delete div {
+                display: inline-block;
+            }
+
+            button {
+                border: none;
+                background-color: inherit;
+                padding: 0;
+                font-size: 12px;
+                cursor: pointer;
+                display: inline-block;
+                text-decoration: underline;
+            }
         {% block stylesheets %}
         {% endblock %}
-
+        </style>
         {% block javascripts %}
         {% endblock %}
     </head>
