@@ -42,6 +42,9 @@
         "twig/twig": "^2.12|^3.0"
     },
     "config": {
+        "platform": {
+            "php": "8.2.8"
+        },
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
@@ -98,6 +101,7 @@
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "^6.3",
         "symfony/stopwatch": "6.3.*",
-        "symfony/web-profiler-bundle": "6.3.*"
+        "symfony/web-profiler-bundle": "6.3.*",
+        "doctrine/doctrine-fixtures-bundle": "^3.4"
     }
 }

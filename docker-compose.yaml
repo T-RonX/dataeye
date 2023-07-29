@@ -26,10 +26,10 @@ services:
         container_name: taskory-db
         restart: always
         environment:
-            - MYSQL_DATABASE=dev
+            - MYSQL_DATABASE=taskory
+            - MYSQL_USER=taskory
+            - MYSQL_PASSWORD=taskory
             - MYSQL_ROOT_PASSWORD=root
-            - MYSQL_USER=app
-            - MYSQL_PASSWORD=apppass
         volumes:
             - ./docker/db/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
             - mysql_data:/var/lib/mysql:cached
