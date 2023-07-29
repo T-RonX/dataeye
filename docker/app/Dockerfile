@@ -7,7 +7,9 @@ RUN apt-get install git -y
 RUN apt-get install curl -y
 
 # System config
-RUN echo "alias ll='ls -alh --color=auto'" >> ~/.bashrc
+RUN echo "alias ll='ls -alh --color=auto'\n" >> ~/.bashrc
+RUN echo "alias php-debug='php -dxdebug.mode=debug -dxdebug.start_with_request=1'\n" >> ~/.bashrc
+RUN echo "export PHP_IDE_CONFIG=\"serverName=taskory.dev\"" >> ~/.bashrc
 
 # Composer
 COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
@@ -50,7 +52,5 @@ RUN yes | pecl install xdebug \
     && echo "xdebug.client_port=9000" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.mode=\"debug,coverage\"" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.start_with_request=trigger" >> /usr/local/etc/php/conf.d/xdebug.ini
-#    && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
-#    && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /var/www
