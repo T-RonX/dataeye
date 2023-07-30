@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\User\Entity;
 
 use App\User\Repository\UserRepository;
+use App\Uuid\Entity\EntityUuidInterface;
+use App\Uuid\Entity\EntityUuidTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements EntityUuidInterface, UserInterface, PasswordAuthenticatedUserInterface
 {
+    use EntityUuidTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

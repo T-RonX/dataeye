@@ -6,11 +6,15 @@ namespace App\Task\Entity;
 
 use App\Task\Repository\TaskRepository;
 use App\User\Entity\User;
+use App\Uuid\Entity\EntityUuidInterface;
+use App\Uuid\Entity\EntityUuidTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
-class Task
+class Task implements EntityUuidInterface
 {
+    use EntityUuidTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -53,7 +57,6 @@ class Task
 
         return $this;
     }
-
     public function getName(): string
     {
         return $this->name;
