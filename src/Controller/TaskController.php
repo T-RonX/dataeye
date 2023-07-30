@@ -24,13 +24,13 @@ class TaskController extends AbstractController
     ) {
     }
 
-    #[Route('/{task}', 'task_overview', requirements: ['task' => '\d+'] ,  defaults: ['task' => null], methods: ['get'])]
+    #[Route('/{task}', 'task_overview', requirements: ['task' => '.{36}'] ,  defaults: ['task' => null], methods: ['get'])]
     public function index(Task $task = null): Response
     {
         $tasks = $this->taskProvider->getAllTask();
         $form = $this->createTaskForm($task, match(true) {
             $task === null => $this->generateUrl('task_create'),
-            $task !== null => $this->generateUrl('task_update', ['task' => $task->getId()])
+            $task !== null => $this->generateUrl('task_update', ['task' => $task->getUuId()])
         });
 
         $deleteForms = $this->createTaskDeleteForms($tasks);
@@ -66,10 +66,10 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/task/update/{task}', 'task_update', requirements: ['task' => '\d+'], methods: ['post'])]
+    #[Route('/task/update/{task}', 'task_update', requirements: ['task' => '.{36}'], methods: ['post'])]
     public function update(Request $request, Task $task): Response
     {
-        $form = $this->createTaskForm($task, $this->generateUrl('task_update', ['task' => $task->getId()]));
+        $form = $this->createTaskForm($task, $this->generateUrl('task_update', ['task' => $task->getUuid()]));
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid())
@@ -90,7 +90,7 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/task/delete/{task}', 'task_delete', requirements: ['task' => '\d+'], methods: ['post'])]
+    #[Route('/task/delete/{task}', 'task_delete', requirements: ['task' => '.{36}'], methods: ['post'])]
     public function delete(Request $request, Task $task): Response
     {
         $form = $this->createTaskDeleteForm();

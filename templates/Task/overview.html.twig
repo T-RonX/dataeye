@@ -13,8 +13,9 @@
 		{% for task in tasks %}
 			<tr>
 				<td>{{ task.id }}</td>
+				<td>{{ task.uuid }}</td>
 				<td>{{ task.name }}</td>
-				<td><a href="{{ path('task_overview', {task: task.id}) }}">edit</a> {{ form(task_delete_forms[task.id], {attr: {action: path('task_delete', {task: task.id}), class: 'form-delete' }}) }}</td>
+				<td><a href="{{ path('task_overview', {task: task.uuid}) }}">edit</a> {{ form(task_delete_forms[task.id], {attr: {action: path('task_delete', {task: task.uuid}), class: 'form-delete' }}) }}</td>
 			</tr>
 		{% endfor %}
 		</tbody>
