@@ -30,4 +30,4 @@ database:
 	make fixtures
 
 fixtures:
-	 docker exec -t taskory-app php /var/www/html/bin/console doctrine:fixtures:load --no-interaction --purge-with-truncate
+	 docker exec -t taskory-app php /var/www/html/bin/console doctrine:fixtures:load --no-interaction
