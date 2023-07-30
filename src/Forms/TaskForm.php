@@ -14,7 +14,6 @@ class TaskForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->setAction($options['action'])
             ->add('name', TextType::class)
             ->add('save', SubmitType::class, [
                 'label' => 'Save',

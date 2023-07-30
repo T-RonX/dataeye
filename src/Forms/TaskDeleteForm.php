@@ -13,7 +13,6 @@ class TaskDeleteForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->setAction($options['action'])
             ->add('delete', SubmitType::class, [
                 'label' => 'delete',
             ]);
