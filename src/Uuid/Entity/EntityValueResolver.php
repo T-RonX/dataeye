@@ -75,7 +75,7 @@ final class EntityValueResolver implements ValueResolverInterface
             }
         }
 
-        if (null === $object && !$argument->isNullable()) {
+        if (null === $object && (!$argument->isNullable() || $this->getIdentifier($request, $options, $argument->getName()) !== null)) {
             throw new NotFoundHttpException(sprintf('"%s" object not found by "%s".', $options->class, self::class).$message);
         }
 
