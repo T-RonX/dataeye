@@ -48,13 +48,13 @@ readonly class TaskHandler implements FacadeInterface
         });
     }
 
-    private function resolveTask(Task|int $task): Task
+    private function resolveTask(Task|int $taskId): Task
     {
-        $task = $this->provider->getTask($task);
+        $task = $this->provider->getTask($taskId);
 
         if ($task === null)
         {
-            throw new ItemNotFoundException(Task::class, (string) $task);
+            throw new ItemNotFoundException(Task::class, (string) $taskId);
         }
 
         return $task;

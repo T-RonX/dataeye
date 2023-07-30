@@ -11,23 +11,38 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use Symfony\Component\DependencyInjection\Attribute\TaggedLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 
 class TaskoryExecuteCommand extends Command
 {
+    /**
+     * @param iterable|FacadeContextInterface[] $contexts
+     */
     public function __construct(
         #[TaggedLocator('app.facade')] private readonly ServiceLocator $facades,
+        #[TaggedIterator('app.facade.context')] private readonly iterable $contexts,
     ) {
-        parent::__construct(null);
+        parent::__construct('taskory:execute');
     }
 
     public function configure(): void
     {
-        $this->setName('taskory:execute')
-            ->addArgument('facade', InputArgument::REQUIRED, 'Facade to call a method on.')
+        $this->addArgument('facade', InputArgument::REQUIRED, 'Facade to call a method on.')
             ->addArgument('method', InputArgument::REQUIRED, 'Method to call on the facade.')
             ->addArgument('arguments', InputArgument::IS_ARRAY, 'Method arguments to pass on.');
+
+        foreach ($this->contexts as $context)
+        {
+            $this->addOption(
+                $context->getOptionName(),
+                $context->getOptionShortcut(),
+                $context->getOptionMode(),
+                $context->getOptionDescription(),
+                $context->getOptionDefaultValue(),
+            );
+        }
     }
 
     public function execute(InputInterface $input, OutputInterface $output): int
@@ -39,6 +54,8 @@ class TaskoryExecuteCommand extends Command
         $facade = $this->getFacade($facadeArgument);
         $this->validateMethod($facade, $method);
         $arguments = $this->prepareArguments($argumentsArgument);
+
+        $this->handleContexts($input);
 
         $result = $facade->$method(...$arguments);
 
@@ -91,5 +108,14 @@ class TaskoryExecuteCommand extends Command
                 default => $argument,
             };
         }, $arguments);
+    }
+
+    private function handleContexts(InputInterface $input): void
+    {
+        foreach ($this->contexts as $context)
+        {
+            $optionValue = $input->getOption($context->getOptionName());
+            $context->setContext($optionValue);
+        }
     }
 }

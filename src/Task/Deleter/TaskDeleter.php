@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Task\Deleter;
 
-use App\Facade\FacadeInterface;
 use App\Task\Entity\Task;
 use Doctrine\ORM\EntityManagerInterface;
 
-readonly class TaskDeleter implements FacadeInterface
+readonly class TaskDeleter
 {
     public function __construct(
         private EntityManagerInterface$entityManager,

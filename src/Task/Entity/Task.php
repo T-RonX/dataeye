@@ -16,7 +16,7 @@ class Task
     private ?int $id;
 
     #[ORM\Column(length: 200)]
-    private ?string $name;
+    private string $name;
 
     public function setId(?int $id): self
     {
@@ -30,14 +30,14 @@ class Task
         return $this->id;
     }
 
-    public function setName(?string $name): self
+    public function setName(string $name): self
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

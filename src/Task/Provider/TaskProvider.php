@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Task\Provider;
 
-use App\Facade\FacadeInterface;
 use App\Task\Entity\Task;
 use App\Task\Repository\TaskRepository;
 
-class TaskProvider implements FacadeInterface
+class TaskProvider
 {
     public function __construct(
         private readonly TaskRepository $repository,
