@@ -23,8 +23,13 @@ security:
                 check_path: user_login
                 enable_csrf: false # FIXME <------------------------
                 csrf_parameter: login_form[_token]
+
             logout:
                 path: user_logout
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 week in seconds
+                remember_me_parameter: login_form[remember_me]
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
@@ -35,7 +40,7 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/user/(register|new|login), roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/, roles: IS_AUTHENTICATED }
 
 when@test:
     security:
