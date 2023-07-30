@@ -18,7 +18,10 @@ class LoginForm extends AbstractType
         $builder
             ->add('username', TextType::class)
             ->add('password', PasswordType::class)
-            ->add('remember_me', CheckboxType::class)
+            ->add('remember_me', CheckboxType::class, [
+                'required' => false,
+                'data' => true,
+            ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Login',
             ]);
