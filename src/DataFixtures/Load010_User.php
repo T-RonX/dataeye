@@ -13,13 +13,12 @@ class Load010_User extends Fixture
 {
     public function load(ObjectManager|EntityManagerInterface $manager): void
     {
-        $manager->beginTransaction();
+        $user = new User();
+        $user->setUsername('ron');
+        $user->setPassword(password_hash('ron', PASSWORD_BCRYPT));
+        $this->setReference('user', $user);
 
-        $task = new User();
-        $task->setUsername('ron');
-        $task->setPassword(password_hash('ron',  PASSWORD_BCRYPT));
-        $manager->persist($task);
-
+        $manager->persist($user);
         $manager->flush();
     }
 }
