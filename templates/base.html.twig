@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
         <style>
+            body {
+                padding: 0;
+                margin: 0;
+                background-color: #26272C;
+            }
+            body, a, button {
+                color: #E4E7E8;
+                font-family: Arial, serif;
+                font-size: 16px;
+                line-height: 22px;
+                font-weight: 400;
+            }
             form.form-delete, form.form-delete div {
                 display: inline-block;
             }
@@ -13,10 +25,10 @@
                 border: none;
                 background-color: inherit;
                 padding: 0;
-                font-size: 12px;
                 cursor: pointer;
                 display: inline-block;
                 text-decoration: underline;
+                user-select: text;
             }
         {% block stylesheets %}
         {% endblock %}
@@ -25,9 +37,15 @@
         {% endblock %}
     </head>
     <body>
+    <div style="font-family: Garamond serif,serif; height: 80px; width: 100%; background-color: #4D8734; text-align: center; font-size: 50px; color: #fff;">
+        <a style="font-size: 34px;"> </a><br/>
+        taskory
+    </div>
     {% if is_granted('IS_AUTHENTICATED') %}
-        <div style="text-align: right; float: right"><a href="{{ path('user_logout') }}">logout</a></div>
+        <div style="padding: 12px; text-align: right; float: right"><a href="{{ path('user_logout') }}">logout</a></div>
     {% endif %}
+    <div style="padding: 12px">
         {% block body %}{% endblock %}
+    </div>
     </body>
 </html>
