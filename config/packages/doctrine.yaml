@@ -27,6 +27,10 @@ doctrine:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Task/Entity'
                 prefix: 'App\Task\Entity'
+            App\AuditLog:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/AuditLog/Entity'
+                prefix: 'App\AuditLog\Entity'
 
 when@test:
     doctrine:
