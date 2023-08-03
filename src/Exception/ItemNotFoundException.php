@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-use Exception;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
-class ItemNotFoundException extends Exception
+class ItemNotFoundException extends NotFoundHttpException
 {
-    public function __construct(string $type, string|int $id, int $code = 0, ?Throwable $previous = null)
+    public function __construct(string $type, string|int $id, ?Throwable $previous = null)
     {
-        parent::__construct("Item of type '$type' with id '$id' could not be found.", $code, $previous);
+        parent::__construct("Item of type '$type' with id '$id' could not be found.", $previous);
     }
 }
