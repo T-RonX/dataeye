@@ -3,6 +3,7 @@ services:
     app:
         build: ./docker/app/.
         container_name: taskory-app
+        restart: always
         working_dir: /var/www/html
         volumes:
             - .:/var/www/html
@@ -12,6 +13,7 @@ services:
     web:
         image: nginx:alpine
         container_name: taskory-web
+        restart: always
         working_dir: /var/www/html
         ports:
             - '8001:80'
