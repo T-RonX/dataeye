@@ -13,12 +13,18 @@ readonly class UserContext
         private Security $security
     ) {
     }
+
+    public function hasUser(): bool
+    {
+        return $this->security->getUser() !== null;
+    }
     
     public function getUser(): User
     {
+        /** @var User $user */
         $user = $this->security->getUser();
 
-        if (!$user instanceof User)
+        if (!$this->hasUser())
         {
             throw new NoUserInContextException();
         }
