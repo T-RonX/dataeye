@@ -11,6 +11,6 @@ class NoUserInContextException extends Exception
 {
     public function __construct(int $code = 0, ?Throwable $previous = null)
     {
-        parent::__construct('Unable to get user from context, no user was set,', $code, $previous);
+        parent::__construct('Unable to get user from context, no user was set.', $code, $previous);
     }
 }
