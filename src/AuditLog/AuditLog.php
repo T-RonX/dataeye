@@ -8,9 +8,13 @@ use App\AuditLog\Entity\AuditLog as AuditLogEntity;
 use App\AuditLog\Entity\AuditLogEntity as AuditLogEntityEntity;
 use App\AuditLog\Entity\AuditLogFieldCreate;
 use App\AuditLog\Entity\AuditLogFieldUpdate;
+use App\AuditLog\Entity\AuditLogProperty;
+use App\AuditLog\Event\PropertyEvent;
+use App\AuditLog\Event\PropertyEventArgs;
 use App\AuditLog\Repository\AuditLogEntityRepository;
 use App\DateTimeProvider\DateTimeProvider;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class AuditLog
 {
@@ -22,6 +26,7 @@ class AuditLog
         private readonly AuditLogEntityRepository $auditLogEntityRepository,
         private readonly AuditLogFactory $factory,
         private readonly DateTimeProvider $dateTimeProvider,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -48,6 +53,9 @@ class AuditLog
 
         unset($this->createCache[spl_object_id($entity)]);
         $this->entityManager->persist($log);
+
+        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_CREATE, $log, $entity);
+
         $this->requireFlush();
     }
 
@@ -63,6 +71,9 @@ class AuditLog
         }
 
         $this->entityManager->persist($log);
+
+        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_UPDATE, $log, $entity);
+
         $this->requireFlush();
     }
 
@@ -71,7 +82,22 @@ class AuditLog
         $log = $this->createAuditLog($entity, EntityModeEnum::Delete);
 
         $this->entityManager->persist($log);
+
+        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_REMOVE, $log, $entity);
+
         $this->requireFlush();
+    }
+
+    private function handleAuditLogPropertyEvent(PropertyEvent $event, AuditLogEntity $log, object $entity)
+    {
+        $eventArgs = new PropertyEventArgs($entity);
+        $this->eventDispatcher->dispatch($eventArgs, $event->name);
+
+        foreach ($eventArgs->getProperties() as $name => $value)
+        {
+            $property = $this->createAuditLogProperty($log, $name, $value);
+            $this->entityManager->persist($property);
+        }
     }
 
     private function createAuditLog(object $entity, EntityModeEnum $mode): AuditLogEntity
@@ -81,6 +107,14 @@ class AuditLog
             ->setEntityId($this->getEntityId($entity))
             ->setMode($mode)
             ->setDate($this->dateTimeProvider->getNow());
+    }
+
+    private function createAuditLogProperty(AuditLogEntity $auditLog, string $name, string $value): AuditLogProperty
+    {
+        return $this->factory->createAuditLogProperty()
+            ->setAuditLog($auditLog)
+            ->setName($name)
+            ->setValue($value);
     }
 
     private function createAuditLogEntity(object $entity): AuditLogEntityEntity
@@ -134,7 +168,7 @@ class AuditLog
 
     private function getOrCreateAuditLogEntity(object $entity): AuditLogEntityEntity
     {
-        $auditLogEntity = $this->auditLogEntityRepository->findOneBy(['entity' => $entity::class]);
+        $auditLogEntity = $this->auditLogEntityRepository->getByEntityClass($entity::class);
 
         if ($auditLogEntity === null)
         {

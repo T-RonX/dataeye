@@ -29,6 +29,4 @@ readonly class EntityRemoveListener
 
         $this->auditLog->logRemove($eventArgs->getObject());
     }
-
-
 }

@@ -8,6 +8,7 @@ use App\AuditLog\Entity\AuditLog;
 use App\AuditLog\Entity\AuditLogEntity;
 use App\AuditLog\Entity\AuditLogFieldCreate;
 use App\AuditLog\Entity\AuditLogFieldUpdate;
+use App\AuditLog\Entity\AuditLogProperty;
 
 readonly class AuditLogFactory
 {
@@ -29,5 +30,10 @@ readonly class AuditLogFactory
     public function createAuditLogEntity(): AuditLogEntity
     {
         return new AuditLogEntity();
+    }
+
+    public function createAuditLogProperty(): AuditLogProperty
+    {
+        return new AuditLogProperty();
     }
 }

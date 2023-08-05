@@ -14,4 +14,14 @@ class AuditLogEntityRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AuditLogEntity::class);
     }
+
+    public function getByEntityClass(string $entityName): ?AuditLogEntity
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.entity = :entity_name')
+            ->setParameter('entity_name', $entityName)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
