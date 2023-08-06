@@ -9,10 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class AuditLogFieldCreate extends AuditLogField
 {
-    #[ORM\Column]
-    private string $value;
+    #[ORM\Column(nullable: true)]
+    private ?string $value;
 
-    public function setValue(string $value): self
+    public function setValue(?string $value): self
     {
         $this->value = $value;
 

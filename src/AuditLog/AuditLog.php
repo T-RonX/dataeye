@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AuditLog;
 
+use DateTimeInterface;
 use App\AuditLog\Entity\AuditLog as AuditLogEntity;
 use App\AuditLog\Entity\AuditLogEntity as AuditLogEntityEntity;
 use App\AuditLog\Entity\AuditLogFieldCreate;
@@ -46,7 +47,7 @@ class AuditLog
 
         foreach ($this->getEntityFieldValues($entity) as $fieldName => $value)
         {
-            $field = $this->createAuditLogFieldCreate($fieldName, (string) $value);
+            $field = $this->createAuditLogFieldCreate($fieldName, $value);
             $field->setAuditLog($log);
             $this->entityManager->persist($field);
         }
@@ -65,7 +66,7 @@ class AuditLog
 
         foreach ($fields as $fieldName => [$oldValue, $newValue])
         {
-            $field = $this->createAuditLogFieldUpdate($fieldName, (string) $newValue, (string) $oldValue);
+            $field = $this->createAuditLogFieldUpdate($fieldName, $newValue, $oldValue);
             $field->setAuditLog($log);
             $this->entityManager->persist($field);
         }
@@ -123,19 +124,49 @@ class AuditLog
             ->setEntity($entity::class);
     }
 
-    private function createAuditLogFieldCreate(string $fieldName, string $value): AuditLogFieldCreate
+    private function createAuditLogFieldCreate(string $fieldName, mixed $value): AuditLogFieldCreate
     {
         return $this->factory->createAuditLogFieldCreate()
             ->setFieldName($fieldName)
-            ->setValue($value);
+            ->setValue($this->createAuditLogFieldStringValue($value));
     }
 
-    private function createAuditLogFieldUpdate(string $fieldName, string $newValue, string $oldValue): AuditLogFieldUpdate
+    private function createAuditLogFieldStringValue(mixed $value): ?string
+    {
+        if ($value === null)
+        {
+            return null;
+        }
+
+        if (is_scalar($value))
+        {
+            return (string) $value;
+        }
+
+        if ($value instanceof DateTimeInterface)
+        {
+            return $value->format('Y-m-d H:i:s');
+        }
+
+        if (is_object($value) && method_exists($value, '__toString'))
+        {
+            return (string) $value;
+        }
+
+        if (is_resource($value))
+        {
+            return '[resource]';
+        }
+
+        return $value::class;
+    }
+
+    private function createAuditLogFieldUpdate(string $fieldName, mixed $newValue, mixed $oldValue): AuditLogFieldUpdate
     {
         return $this->factory->createAuditLogFieldUpdate()
             ->setFieldName($fieldName)
-            ->setNewValue($newValue)
-            ->setOldValue($oldValue);
+            ->setNewValue($this->createAuditLogFieldStringValue($newValue))
+            ->setOldValue($this->createAuditLogFieldStringValue($oldValue));
     }
 
     private function getEntityId(object $entity): int
