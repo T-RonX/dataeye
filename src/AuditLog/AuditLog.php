@@ -22,6 +22,11 @@ class AuditLog
     private bool $requiresFlush = false;
     private array $createCache = [];
 
+    /**
+     * @var array<string, AuditLogEntityEntity>
+     */
+    private array $auditLogEntityCache = [];
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly AuditLogEntityRepository $auditLogEntityRepository,
@@ -199,11 +204,17 @@ class AuditLog
 
     private function getOrCreateAuditLogEntity(object $entity): AuditLogEntityEntity
     {
+        if (array_key_exists($entity::class, $this->auditLogEntityCache))
+        {
+            return $this->auditLogEntityCache[$entity::class];
+        }
+
         $auditLogEntity = $this->auditLogEntityRepository->getByEntityClass($entity::class);
 
         if ($auditLogEntity === null)
         {
             $auditLogEntity = $this->createAuditLogEntity($entity);
+            $this->auditLogEntityCache[$entity::class] = $auditLogEntity;
             $this->entityManager->persist($auditLogEntity);
         }
 
