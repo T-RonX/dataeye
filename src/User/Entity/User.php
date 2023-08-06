@@ -7,6 +7,8 @@ namespace App\User\Entity;
 use App\User\Repository\UserRepository;
 use App\Uuid\Entity\EntityUuidInterface;
 use App\Uuid\Entity\EntityUuidTrait;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -26,6 +28,27 @@ class User implements EntityUuidInterface, UserInterface, PasswordAuthenticatedU
 
     #[ORM\Column(length: 60)]
     private string $password;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'associatedWith')]
+    private Collection $associatedTo;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\JoinTable(name: 'user_associates')]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'associate', referencedColumnName: 'id')]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'associatedTo')]
+    private Collection $associatedWith;
+
+    public function __construct()
+    {
+        $this->associatedTo = new ArrayCollection();
+        $this->associatedWith = new ArrayCollection();
+    }
 
     public function setId(?int $id): self
     {
@@ -76,5 +99,29 @@ class User implements EntityUuidInterface, UserInterface, PasswordAuthenticatedU
     public function eraseCredentials(): void
     {
 
+    }
+
+    public function getAssociatedTo(): Collection
+    {
+        return $this->associatedTo;
+    }
+
+    public function setAssociatedTo(Collection $associatedTo): self
+    {
+        $this->associatedTo = $associatedTo;
+
+        return $this;
+    }
+
+    public function getAssociatedWith(): Collection
+    {
+        return $this->associatedWith;
+    }
+
+    public function setAssociatedWith(Collection $associatedWith): self
+    {
+        $this->associatedWith = $associatedWith;
+
+        return $this;
     }
 }

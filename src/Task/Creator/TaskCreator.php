@@ -21,7 +21,7 @@ readonly class TaskCreator
     public function create(string $name): Task
     {
         $task = $this->provider->createNewTask();
-        $task->setCreatedBy($this->userContext->getUser());
+        $task->setOwnedBy($this->userContext->getUser());
         $task->setName($name);
 
         $this->entityManager->persist($task);
