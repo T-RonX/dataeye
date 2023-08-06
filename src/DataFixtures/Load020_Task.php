@@ -5,20 +5,239 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Task\Entity\Task;
+use App\Task\Entity\TaskCategory;
+use App\Task\Entity\TaskCompletion;
+use App\Task\Entity\TaskInterval;
+use App\Task\Entity\TaskParticipant;
+use App\Task\Entity\TaskPostpone;
 use App\User\Entity\User;
+use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 
 class Load020_Task extends Fixture
 {
+    private EntityManagerInterface $entityManager;
+
     public function load(ObjectManager|EntityManagerInterface $manager): void
     {
-        $task = new Task();
-        $task->setName('Task 1');
-        $task->setCreatedBy($this->getReference('user', User::class));
+        $this->entityManager = $manager;
 
-        $manager->persist($task);
+        $this->createCategories();
+
+        $user_1 = $this->getReference('user_1', User::class);
+        $user_2 = $this->getReference('user_2', User::class);
+
+        $task_1 = (new Task())
+            ->setName('Task 1')
+            ->setDescription('Some description')
+            ->setOwnedBy($user_1)
+            ->setCategory($this->getReference('user_1_category_1', TaskCategory::class))
+            ->setDuration(60);
+
+        $task_2 = (new Task())
+            ->setName('Task 2')
+            ->setDescription('Some description')
+            ->setOwnedBy($user_1)
+            ->setCategory($this->getReference('user_1_category_2', TaskCategory::class))
+            ->setDuration(60);
+
+        $task_3 = (new Task())
+            ->setName('Task 3')
+            ->setDescription('Some description')
+            ->setOwnedBy($user_2)
+            ->setCategory($this->getReference('user_2_category_1', TaskCategory::class))
+            ->setDuration(60);
+
+        $this->addReference('user_1_task_1', $task_1);
+        $this->addReference('user_1_task_2', $task_2);
+        $this->addReference('user_2_task_1', $task_3);
+
+        $this->createIntervals();
+        $this->createParticipants();
+        $this->createCompletions();
+        $this->createPostpones();
+
+        $task_1->setIntervals(new ArrayCollection([
+            $this->getReference('user_1_task_1_interval_1', TaskInterval::class),
+            $this->getReference('user_1_task_1_interval_2', TaskInterval::class),
+        ]))
+        ->setParticipants(new ArrayCollection([
+            $this->getReference('user_1_task_1_participant_1', TaskParticipant::class),
+        ]))
+        ->setCompletions(new ArrayCollection([
+            $this->getReference('user_1_task_1_completion_1', TaskCompletion::class),
+        ]));
+
+        $task_2->setIntervals(new ArrayCollection([
+            $this->getReference('user_1_task_2_interval_1', TaskInterval::class),
+        ]))
+        ->setParticipants(new ArrayCollection([
+            $this->getReference('user_1_task_2_participant_1', TaskParticipant::class),
+            $this->getReference('user_1_task_2_participant_2', TaskParticipant::class),
+        ]))
+        ->setPostpones(new ArrayCollection([
+            $this->getReference('user_1_task_2_postpone_1', TaskPostpone::class),
+            $this->getReference('user_1_task_2_postpone_2', TaskPostpone::class),
+        ]))
+        ->setCompletions(new ArrayCollection([
+                $this->getReference('user_1_task_2_completion_1', TaskCompletion::class),
+                $this->getReference('user_1_task_2_completion_2', TaskCompletion::class),
+        ]));
+
+        $task_3->setIntervals(new ArrayCollection([
+            $this->getReference('user_2_task_1_interval_1', TaskInterval::class),
+        ]))
+        ->setParticipants(new ArrayCollection([
+            $this->getReference('user_2_task_1_participant_1', TaskParticipant::class),
+            $this->getReference('user_2_task_1_participant_2', TaskParticipant::class),
+        ]));
+
+        $manager->persist($task_1);
+        $manager->persist($task_2);
+        $manager->persist($task_3);
+
         $manager->flush();
+    }
+
+    private function createCategories(): void
+    {
+        $user_1 = $this->getReference('user_1', User::class);
+        $user_2 = $this->getReference('user_2', User::class);
+
+        $category_1 = (new TaskCategory())
+            ->setName('Category 1')
+            ->setOwnedBy($user_1);
+
+        $category_2 = (new TaskCategory())
+            ->setName('Category 2')
+            ->setOwnedBy($user_1);
+
+        $category_3 = (new TaskCategory())
+            ->setName('Category 1')
+            ->setOwnedBy($user_2);
+
+        $this->addReference('user_1_category_1', $category_1);
+        $this->addReference('user_1_category_2', $category_2);
+        $this->addReference('user_2_category_1', $category_3);
+
+        $this->entityManager->persist($category_1);
+        $this->entityManager->persist($category_2);
+        $this->entityManager->persist($category_3);
+    }
+
+    private function createIntervals(): void
+    {
+        $interval_1 = (new TaskInterval())
+            ->setTask($this->getReference('user_1_task_1', Task::class))
+            ->setStartsAt(new DateTime('2023-8-5 12:50:33'))
+            ->setEndsAt(new DateTime('2023-12-31 23:59:59'));
+
+        $interval_2 = (new TaskInterval())
+            ->setTask($this->getReference('user_1_task_1', Task::class))
+            ->setStartsAt(new DateTime('2024-1-1 00:00:00'))
+            ->setEndsAt(null);
+
+        $interval_3 = (new TaskInterval())
+            ->setTask($this->getReference('user_1_task_2', Task::class))
+            ->setStartsAt(new DateTime('2000-1-1 00:00:00'))
+            ->setEndsAt(new DateTime('2050-1-1 23:59:59'));
+
+        $interval_4 = (new TaskInterval())
+            ->setTask($this->getReference('user_2_task_1', Task::class))
+            ->setStartsAt(new DateTime('2023-1-1 00:00:00'))
+            ->setEndsAt(null);
+
+        $this->addReference('user_1_task_1_interval_1', $interval_1);
+        $this->addReference('user_1_task_1_interval_2', $interval_2);
+        $this->addReference('user_1_task_2_interval_1', $interval_3);
+        $this->addReference('user_2_task_1_interval_1', $interval_4);
+
+        $this->entityManager->persist($interval_1);
+        $this->entityManager->persist($interval_2);
+        $this->entityManager->persist($interval_3);
+        $this->entityManager->persist($interval_4);
+    }
+
+    private function createParticipants(): void
+    {
+        $participant_1 = (new TaskParticipant())
+            ->setTask($this->getReference('user_1_task_1', Task::class))
+            ->setUser($this->getReference('user_1', User::class));
+
+        $participant_2 = (new TaskParticipant())
+            ->setTask($this->getReference('user_1_task_2', Task::class))
+            ->setUser($this->getReference('user_1', User::class));
+
+        $participant_3 = (new TaskParticipant())
+            ->setTask($this->getReference('user_1_task_2', Task::class))
+            ->setUser($this->getReference('user_2', User::class));
+
+        $participant_4 = (new TaskParticipant())
+            ->setTask($this->getReference('user_2_task_1', Task::class))
+            ->setUser($this->getReference('user_2', User::class));
+
+        $participant_5 = (new TaskParticipant())
+            ->setTask($this->getReference('user_2_task_1', Task::class))
+            ->setUser($this->getReference('user_1', User::class));
+
+        $this->addReference('user_1_task_1_participant_1', $participant_1);
+        $this->addReference('user_1_task_2_participant_1', $participant_2);
+        $this->addReference('user_1_task_2_participant_2', $participant_3);
+        $this->addReference('user_2_task_1_participant_1', $participant_4);
+        $this->addReference('user_2_task_1_participant_2', $participant_5);
+
+        $this->entityManager->persist($participant_1);
+        $this->entityManager->persist($participant_2);
+        $this->entityManager->persist($participant_3);
+        $this->entityManager->persist($participant_4);
+        $this->entityManager->persist($participant_5);
+    }
+
+    private function createCompletions(): void
+    {
+        $completion_1 = (new TaskCompletion())
+            ->setTask($this->getReference('user_1_task_2', Task::class))
+            ->setCompletionAt(new DateTime('2020-5-5 09:30:00'))
+            ->setCompletionBy($this->getReference('user_1_task_2_participant_2', TaskParticipant::class));
+
+        $completion_2 = (new TaskCompletion())
+            ->setTask($this->getReference('user_1_task_2', Task::class))
+            ->setCompletionAt(new DateTime('2020-5-8 09:30:00'))
+            ->setCompletionBy($this->getReference('user_1_task_2_participant_1', TaskParticipant::class));
+
+        $completion_3 = (new TaskCompletion())
+            ->setTask($this->getReference('user_2_task_1', Task::class))
+            ->setCompletionAt(new DateTime('2020-5-8 09:30:00'))
+            ->setCompletionBy($this->getReference('user_2_task_1_participant_2', TaskParticipant::class));
+
+        $this->addReference('user_1_task_1_completion_1', $completion_1);
+        $this->addReference('user_1_task_2_completion_1', $completion_2);
+        $this->addReference('user_1_task_2_completion_2', $completion_3);
+
+        $this->entityManager->persist($completion_1);
+        $this->entityManager->persist($completion_2);
+        $this->entityManager->persist($completion_3);
+    }
+
+    private function createPostpones(): void
+    {
+        $postpone_1 = (new TaskPostpone())
+            ->setTask($this->getReference('user_1_task_1', Task::class))
+            ->setPostponedAt(new DateTime('2020-3-5 12:00:50'))
+            ->setPostponedBy($this->getReference('user_1_task_2_participant_1', TaskParticipant::class));
+
+        $postpone_2 = (new TaskPostpone())
+            ->setTask($this->getReference('user_1_task_1', Task::class))
+            ->setPostponedAt(new DateTime('2020-3-4 22:20:00'))
+            ->setPostponedBy($this->getReference('user_1_task_2_participant_2', TaskParticipant::class));
+
+        $this->addReference('user_1_task_2_postpone_1', $postpone_1);
+        $this->addReference('user_1_task_2_postpone_2', $postpone_2);
+
+        $this->entityManager->persist($postpone_1);
+        $this->entityManager->persist($postpone_2);
     }
 }
