@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait EntityUuidTrait
 {
-    #[ORM\Column(length: 36, unique: true)]
+    #[ORM\Column(type: 'guid', unique: true)]
     private ?string $uuid = null;
 
     public function getUuid(): string
