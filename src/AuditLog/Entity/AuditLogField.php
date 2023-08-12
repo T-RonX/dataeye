@@ -15,10 +15,10 @@ abstract class AuditLogField
     private ?int $id;
 
     #[ORM\ManyToOne(targetEntity: AuditLog::class)]
-    #[ORM\JoinColumn(name: "audit_log", referencedColumnName: "id", nullable: false)]
+    #[ORM\JoinColumn(referencedColumnName: "id", nullable: false)]
     private AuditLog $auditLog;
 
-    #[ORM\Column(name: 'field_name')]
+    #[ORM\Column]
     private string $fieldName;
 
     public function setAuditLog(AuditLog $auditLog): self

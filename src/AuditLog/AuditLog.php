@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\AuditLog;
 
-use DateTimeInterface;
 use App\AuditLog\Entity\AuditLog as AuditLogEntity;
 use App\AuditLog\Entity\AuditLogEntity as AuditLogEntityEntity;
 use App\AuditLog\Entity\AuditLogFieldCreate;
@@ -14,6 +13,7 @@ use App\AuditLog\Event\PropertyEvent;
 use App\AuditLog\Event\PropertyEventArgs;
 use App\AuditLog\Repository\AuditLogEntityRepository;
 use App\DateTimeProvider\DateTimeProvider;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

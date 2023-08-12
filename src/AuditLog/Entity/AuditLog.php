@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\AuditLog\Entity;
 
 use App\AuditLog\EntityModeEnum;
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -17,7 +17,7 @@ class AuditLog
     private ?int $id;
 
     #[ORM\ManyToOne(targetEntity: AuditLogEntity::class)]
-    #[ORM\JoinColumn(name: "audit_log_entity", referencedColumnName: "id", nullable: false)]
+    #[ORM\JoinColumn(referencedColumnName: "id", nullable: false)]
     private AuditLogEntity $entity;
 
     #[ORM\Column]
@@ -26,8 +26,8 @@ class AuditLog
     #[ORM\Column]
     private int $mode;
 
-    #[ORM\Column]
-    private DateTime $date;
+    #[ORM\Column(type: 'datetimetz_immutable')]
+    private DateTimeImmutable $date;
 
     public function setEntity(AuditLogEntity $entity): self
     {
@@ -50,7 +50,7 @@ class AuditLog
         return $this;
     }
 
-    public function setDate(DateTime $date): self
+    public function setDate(DateTimeImmutable $date): self
     {
         $this->date = $date;
 

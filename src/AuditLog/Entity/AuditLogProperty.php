@@ -15,7 +15,7 @@ class AuditLogProperty
     private ?int $id;
 
     #[ORM\ManyToOne(targetEntity: AuditLog::class)]
-    #[ORM\JoinColumn(name: "audit_log", referencedColumnName: "id", nullable: false)]
+    #[ORM\JoinColumn(referencedColumnName: "id", nullable: false)]
     private AuditLog $auditLog;
 
     #[ORM\Column]
