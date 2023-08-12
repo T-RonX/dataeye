@@ -29,7 +29,7 @@ class TaskRecurrenceWeek extends TaskRecurrence
     }
 
     /**
-     * @param array<string> $days
+     * @param array<Day> $days
      */
     public function setDays(array $days): self
     {
@@ -39,7 +39,7 @@ class TaskRecurrenceWeek extends TaskRecurrence
     }
 
     /**
-     * @return array<string>
+     * @return array<Day>
      */
     public function getDays(): array
     {
