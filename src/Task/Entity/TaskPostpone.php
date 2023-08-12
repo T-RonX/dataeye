@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Task\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -23,8 +23,8 @@ class TaskPostpone
     #[ORM\JoinColumn(name: 'postponed_by', referencedColumnName: 'id', nullable: false)]
     private TaskParticipant $postponedBy;
 
-    #[ORM\Column(name: 'postponed_at')]
-    private DateTime $postponedAt;
+    #[ORM\Column(name: 'postponed_at', type: 'datetimetz_immutable')]
+    private DateTimeImmutable $postponedAt;
     
     public function getId(): ?int
     {
@@ -62,12 +62,12 @@ class TaskPostpone
         return $this;
     }
     
-    public function getPostponedAt(): DateTime
+    public function getPostponedAt(): DateTimeImmutable
     {
         return $this->postponedAt;
     }
 
-    public function setPostponedAt(DateTime $postponedAt): self
+    public function setPostponedAt(DateTimeImmutable $postponedAt): self
     {
         $this->postponedAt = $postponedAt;
 

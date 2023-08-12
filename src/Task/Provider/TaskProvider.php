@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Task\Provider;
 
+use App\Exception\ItemNotFoundException;
 use App\Task\Entity\Task;
 use App\Task\Repository\TaskRepository;
 
-class TaskProvider
+readonly class TaskProvider
 {
     public function __construct(
-        private readonly TaskRepository $repository,
+        private TaskRepository $repository,
     ) {
     }
 
@@ -24,16 +25,23 @@ class TaskProvider
         return $this->repository->find($task);
     }
 
-    public function createNewTask(): Task
-    {
-        return new Task();
-    }
-
     /**
      * @return Task[]
      */
     public function getAllTask(): array
     {
         return $this->repository->findAll();
+    }
+
+    public function resolveTask(Task|int $item): Task
+    {
+        $task = $this->getTask($item);
+
+        if ($task === null)
+        {
+            throw new ItemNotFoundException(Task::class, (string) $item);
+        }
+
+        return $task;
     }
 }

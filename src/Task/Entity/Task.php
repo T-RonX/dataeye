@@ -40,13 +40,13 @@ class Task implements EntityUuidInterface
     private TaskCategory $category;
 
     /**
-     * @var Collection<int, TaskInterval>
+     * @var Collection<int, TaskRecurrence>
      */
-    #[ORM\JoinTable(name: 'task_intervals')]
-    #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'interv', referencedColumnName: 'id', unique: true)]
-    #[ORM\ManyToMany(targetEntity: TaskInterval::class)]
-    private Collection $intervals;
+//    #[ORM\JoinTable(name: 'task_recurrences')]
+//    #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id')]
+//    #[ORM\InverseJoinColumn(name: 'recurrence', referencedColumnName: 'id', unique: true)]
+    #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskRecurrence::class)]
+    private Collection $recurrences;
 
     /**
      * @var Collection<int, TaskParticipant>
@@ -77,7 +77,7 @@ class Task implements EntityUuidInterface
 
     public function __construct()
     {
-        $this->intervals = new ArrayCollection();
+        $this->recurrences = new ArrayCollection();
         $this->participants = new ArrayCollection();
         $this->completions = new ArrayCollection();
         $this->postpones = new ArrayCollection();
@@ -154,14 +154,14 @@ class Task implements EntityUuidInterface
         return $this;
     }
     
-    public function getIntervals(): Collection
+    public function getRecurrences(): Collection
     {
-        return $this->intervals;
+        return $this->recurrences;
     }
     
-    public function setIntervals(Collection $intervals): self
+    public function setRecurrences(Collection $recurrences): self
     {
-        $this->intervals = $intervals;
+        $this->recurrences = $recurrences;
 
         return $this;
     }

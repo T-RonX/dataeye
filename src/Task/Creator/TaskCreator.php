@@ -4,29 +4,75 @@ declare(strict_types=1);
 
 namespace App\Task\Creator;
 
-use App\Context\UserContext;
 use App\Task\Entity\Task;
-use App\Task\Provider\TaskProvider;
+use App\Task\Entity\TaskCategory;
+use App\Task\Factory\TaskFactory;
+use App\User\Entity\User;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class TaskCreator
 {
     public function __construct(
-        private TaskProvider $provider,
-        private UserContext $userContext,
-        private EntityManagerInterface$entityManager,
+        private TaskFactory $factory,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
-    public function create(string $name): Task
+    /**
+     * @param array<User> $participatingUsers
+     */
+    public function create(User $owner, string $name, string $description, int $duration, TaskCategory $category, DateTime $recurrenceStartsAt, DateTime $recurrenceEndsAt, array $participatingUsers): Task
     {
-        $task = $this->provider->createNewTask();
-        $task->setOwnedBy($this->userContext->getUser());
-        $task->setName($name);
+        $task = $this->createTask($owner, $name, $description, $duration, $category);
+        $this->createRecurrence($task, $recurrenceStartsAt, $recurrenceEndsAt);
+        $this->createParticipants($task, $participatingUsers);
 
-        $this->entityManager->persist($task);
         $this->entityManager->flush();
 
         return $task;
+    }
+
+    private function createTask(User $owner, string $name, string $description, int $duration, TaskCategory $category): Task
+    {
+        $task = $this->factory->createTask()
+            ->setOwnedBy($owner)
+            ->setName($name)
+            ->setDescription($description)
+            ->setDuration($duration)
+            ->setCategory($category);
+
+        $this->entityManager->persist($task);
+
+        return $task;
+    }
+
+    private function createRecurrence(Task $task, DateTime $startsAt, DateTime $endsAt): void
+    {
+        $recurrence = ($this->factory->createTaskRecurrence())
+            ->setTask($task)
+            ->setStartsAt($startsAt)
+            ->setEndsAt($endsAt);
+
+        $this->entityManager->persist($recurrence);
+        $task->getRecurrences()->add($recurrence);
+    }
+
+    private function createParticipants(Task $task, array $users): void
+    {
+        foreach ($users as $user)
+        {
+            $this->createParticipant($task, $user);
+        }
+    }
+
+    private function createParticipant(Task $task, User $user): void
+    {
+        $participant = ($this->factory->createTaskParticipant())
+            ->setTask($task)
+            ->setUser($user);
+
+        $this->entityManager->persist($participant);
+        $task->getParticipants()->add($participant);
     }
 }

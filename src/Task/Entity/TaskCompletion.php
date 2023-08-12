@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Task\Entity;
 
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -23,8 +23,8 @@ class TaskCompletion
     #[ORM\JoinColumn(name: 'completion_by', referencedColumnName: 'id', nullable: false)]
     private TaskParticipant $completionBy;
 
-    #[ORM\Column]
-    private DateTime $completionAt;
+    #[ORM\Column(type: 'datetimetz_immutable')]
+    private DateTimeImmutable $completionAt;
     
     public function getId(): ?int
     {
@@ -63,12 +63,12 @@ class TaskCompletion
         return $this;
     }
     
-    public function getCompletionAt(): DateTime
+    public function getCompletionAt(): DateTimeImmutable
     {
         return $this->completionAt;
     }
     
-    public function setCompletionAt(DateTime $completionAt): self
+    public function setCompletionAt(DateTimeImmutable $completionAt): self
     {
         $this->completionAt = $completionAt;
 
