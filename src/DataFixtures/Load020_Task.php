@@ -7,11 +7,18 @@ namespace App\DataFixtures;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Entity\TaskCompletion;
-use App\Task\Entity\TaskInterval;
 use App\Task\Entity\TaskParticipant;
 use App\Task\Entity\TaskPostpone;
+use App\Task\Entity\TaskRecurrenceDay;
+use App\Task\Entity\TaskRecurrenceMonthRelative;
+use App\Task\Entity\TaskRecurrenceWeek;
+use App\Task\Entity\TaskRecurrenceYearRelative;
+use App\Task\Enum\Day;
+use App\Task\Enum\DayOrdinal;
+use App\Task\Enum\Month;
+use App\Task\Enum\WeekOrdinal;
 use App\User\Entity\User;
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,14 +62,14 @@ class Load020_Task extends Fixture
         $this->addReference('user_1_task_2', $task_2);
         $this->addReference('user_2_task_1', $task_3);
 
-        $this->createIntervals();
+        $this->createRecurrences();
         $this->createParticipants();
         $this->createCompletions();
         $this->createPostpones();
 
-        $task_1->setIntervals(new ArrayCollection([
-            $this->getReference('user_1_task_1_interval_1', TaskInterval::class),
-            $this->getReference('user_1_task_1_interval_2', TaskInterval::class),
+        $task_1->setRecurrences(new ArrayCollection([
+            $this->getReference('user_1_task_1_recurrence_1', TaskRecurrenceYearRelative::class),
+            $this->getReference('user_1_task_1_recurrence_2', TaskRecurrenceMonthRelative::class),
         ]))
         ->setParticipants(new ArrayCollection([
             $this->getReference('user_1_task_1_participant_1', TaskParticipant::class),
@@ -71,8 +78,8 @@ class Load020_Task extends Fixture
             $this->getReference('user_1_task_1_completion_1', TaskCompletion::class),
         ]));
 
-        $task_2->setIntervals(new ArrayCollection([
-            $this->getReference('user_1_task_2_interval_1', TaskInterval::class),
+        $task_2->setRecurrences(new ArrayCollection([
+            $this->getReference('user_1_task_2_recurrence_1', TaskRecurrenceDay::class),
         ]))
         ->setParticipants(new ArrayCollection([
             $this->getReference('user_1_task_2_participant_1', TaskParticipant::class),
@@ -87,8 +94,8 @@ class Load020_Task extends Fixture
                 $this->getReference('user_1_task_2_completion_2', TaskCompletion::class),
         ]));
 
-        $task_3->setIntervals(new ArrayCollection([
-            $this->getReference('user_2_task_1_interval_1', TaskInterval::class),
+        $task_3->setRecurrences(new ArrayCollection([
+            $this->getReference('user_2_task_1_recurrence_1', TaskRecurrenceWeek::class),
         ]))
         ->setParticipants(new ArrayCollection([
             $this->getReference('user_2_task_1_participant_1', TaskParticipant::class),
@@ -128,37 +135,45 @@ class Load020_Task extends Fixture
         $this->entityManager->persist($category_3);
     }
 
-    private function createIntervals(): void
+    private function createRecurrences(): void
     {
-        $interval_1 = (new TaskInterval())
+        $recurrence_1 = (new TaskRecurrenceYearRelative())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setStartsAt(new DateTime('2023-8-5 12:50:33'))
-            ->setEndsAt(new DateTime('2023-12-31 23:59:59'));
+            ->setStartsAt(new DateTimeImmutable('2023-8-5 12:50:33'))
+            ->setEndsAt(new DateTimeImmutable('2023-12-31 23:59:59'))
+            ->setDay(Day::Tuesday)
+            ->setMonth(Month::February)
+            ->setDayOrdinal(DayOrdinal::Second);
 
-        $interval_2 = (new TaskInterval())
+        $recurrence_2 = (new TaskRecurrenceMonthRelative())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setStartsAt(new DateTime('2024-1-1 00:00:00'))
-            ->setEndsAt(null);
+            ->setStartsAt(new DateTimeImmutable('2024-1-1 00:00:00'))
+            ->setEndsAt(null)
+            ->setWeekOrdinal(WeekOrdinal::Last)
+            ->setDay(Day::Friday);
 
-        $interval_3 = (new TaskInterval())
+        $recurrence_3 = (new TaskRecurrenceDay())
             ->setTask($this->getReference('user_1_task_2', Task::class))
-            ->setStartsAt(new DateTime('2000-1-1 00:00:00'))
-            ->setEndsAt(new DateTime('2050-1-1 23:59:59'));
+            ->setStartsAt(new DateTimeImmutable('2000-1-1 00:00:00'))
+            ->setEndsAt(new DateTimeImmutable('2050-1-1 23:59:59'))
+            ->setDayNumber(20);
 
-        $interval_4 = (new TaskInterval())
+        $recurrence_4 = (new TaskRecurrenceWeek())
             ->setTask($this->getReference('user_2_task_1', Task::class))
-            ->setStartsAt(new DateTime('2023-1-1 00:00:00'))
-            ->setEndsAt(null);
+            ->setStartsAt(new DateTimeImmutable('2023-1-1 00:00:00'))
+            ->setEndsAt(null)
+            ->setInterval(2)
+            ->setDays([Day::Saturday, Day::Sunday]);
 
-        $this->addReference('user_1_task_1_interval_1', $interval_1);
-        $this->addReference('user_1_task_1_interval_2', $interval_2);
-        $this->addReference('user_1_task_2_interval_1', $interval_3);
-        $this->addReference('user_2_task_1_interval_1', $interval_4);
+        $this->addReference('user_1_task_1_recurrence_1', $recurrence_1);
+        $this->addReference('user_1_task_1_recurrence_2', $recurrence_2);
+        $this->addReference('user_1_task_2_recurrence_1', $recurrence_3);
+        $this->addReference('user_2_task_1_recurrence_1', $recurrence_4);
 
-        $this->entityManager->persist($interval_1);
-        $this->entityManager->persist($interval_2);
-        $this->entityManager->persist($interval_3);
-        $this->entityManager->persist($interval_4);
+        $this->entityManager->persist($recurrence_1);
+        $this->entityManager->persist($recurrence_2);
+        $this->entityManager->persist($recurrence_3);
+        $this->entityManager->persist($recurrence_4);
     }
 
     private function createParticipants(): void
@@ -200,17 +215,17 @@ class Load020_Task extends Fixture
     {
         $completion_1 = (new TaskCompletion())
             ->setTask($this->getReference('user_1_task_2', Task::class))
-            ->setCompletionAt(new DateTime('2020-5-5 09:30:00'))
+            ->setCompletionAt(new DateTimeImmutable('2020-5-5 09:30:00'))
             ->setCompletionBy($this->getReference('user_1_task_2_participant_2', TaskParticipant::class));
 
         $completion_2 = (new TaskCompletion())
             ->setTask($this->getReference('user_1_task_2', Task::class))
-            ->setCompletionAt(new DateTime('2020-5-8 09:30:00'))
+            ->setCompletionAt(new DateTimeImmutable('2020-5-8 09:30:00'))
             ->setCompletionBy($this->getReference('user_1_task_2_participant_1', TaskParticipant::class));
 
         $completion_3 = (new TaskCompletion())
             ->setTask($this->getReference('user_2_task_1', Task::class))
-            ->setCompletionAt(new DateTime('2020-5-8 09:30:00'))
+            ->setCompletionAt(new DateTimeImmutable('2020-5-8 09:30:00'))
             ->setCompletionBy($this->getReference('user_2_task_1_participant_2', TaskParticipant::class));
 
         $this->addReference('user_1_task_1_completion_1', $completion_1);
@@ -226,12 +241,12 @@ class Load020_Task extends Fixture
     {
         $postpone_1 = (new TaskPostpone())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setPostponedAt(new DateTime('2020-3-5 12:00:50'))
+            ->setPostponedAt(new DateTimeImmutable('2020-3-5 12:00:50'))
             ->setPostponedBy($this->getReference('user_1_task_2_participant_1', TaskParticipant::class));
 
         $postpone_2 = (new TaskPostpone())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setPostponedAt(new DateTime('2020-3-4 22:20:00'))
+            ->setPostponedAt(new DateTimeImmutable('2020-3-4 22:20:00'))
             ->setPostponedBy($this->getReference('user_1_task_2_participant_2', TaskParticipant::class));
 
         $this->addReference('user_1_task_2_postpone_1', $postpone_1);

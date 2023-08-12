@@ -20,7 +20,7 @@ class Load010_User extends Fixture
         $this->addReference('user_1', $user_1);
 
         $user_2 = new User();
-        $user_2->setUsername('user12');
+        $user_2->setUsername('user2');
         $user_2->setPassword(password_hash('user2', PASSWORD_BCRYPT));
 
         $this->addReference('user_2', $user_2);
