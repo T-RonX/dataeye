@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Context\UserContext;
 use App\Forms\TaskDeleteForm;
 use App\Forms\TaskForm;
 use App\Task\Entity\Task;
@@ -20,7 +21,8 @@ class TaskController extends AbstractController
 {
     public function __construct(
         private readonly TaskProvider $taskProvider,
-        private readonly TaskHandler $taskHandler
+        private readonly TaskHandler $taskHandler,
+        private readonly UserContext $userContext,
     ) {
     }
 
@@ -50,8 +52,15 @@ class TaskController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid())
         {
-            $name = $form->getData()['name'];
-            $this->taskHandler->create($name);
+            $name = $form['name']->getData();
+            $description = $form['description']->getData();
+            $duration = (int) $form['duration']->getData();
+            $category = $form['category']->getData();
+            $recurrenceStartsAt = $form['starts_at']->getData();
+            $recurrenceEndsAt = $form['ends_at']->getData();
+            $participants = iterator_to_array($form['participants']->getData());
+
+            $this->taskHandler->create($name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participants);
 
             return $this->redirectToRoute('task_overview');
         }
@@ -107,7 +116,9 @@ class TaskController extends AbstractController
     private function createTaskForm(?Task $task, string $action): FormInterface
     {
         return $this->createForm(TaskForm::class, $task, [
-            'action' => $action
+            'action' => $action,
+            'user' => $this->userContext->getUser(),
+            'task' => $task,
         ]);
     }
 
