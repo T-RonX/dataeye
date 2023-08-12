@@ -1,6 +1,11 @@
 {% extends 'base.html.twig' %}
+{% form_theme login_form with _self %}
 
 {% block body %}
-	Login:<br/>
-	{{ form(login_form) }}
+	{{ form(login_form, {'attr': {'class': 'regular'}}) }}
+{% endblock %}
+
+{% block _login_form_remember_me_row %}
+	{{ form_widget(form) }}
+	{{ form_label(form) }}
 {% endblock %}
