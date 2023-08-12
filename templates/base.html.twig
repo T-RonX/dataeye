@@ -32,14 +32,14 @@
             }
 
             form.regular {
-                display: inline-block;
-                justify-content:center; display: flex;
+                display: flex;
+                justify-content:center;
             }
 
             form.regular > div {
                 background-color: #44474E;
                 padding: 1.5em 1em;
-                min-width: 20em;
+                min-width: 25em;
                 border-radius: 6px;
             }
 
@@ -59,12 +59,12 @@
                 padding-left: 0;
             }
 
-            form.regular input, form.regular select {
+            form.regular input, form.regular select, form.regular textarea {
                 background-color: #DDDCBE;
                 border: none;
                 height: 1.8em;
                 font-size: 16px;
-                padding: 0 .5em;
+                padding: .2em .5em;
                 border-radius: 3px;
             }
 
@@ -108,14 +108,18 @@
                 transition-duration: 0.2s;
             }
 
-            form.regular input:focus, form.regular select:focus {
+            form.regular input:focus, form.regular select:focus, form.regular textarea:focus {
                 outline: none !important;
                 box-shadow: inset 0 0 1px 1px #4D8734;
             }
 
-            form.regular input {
+            form.regular input, form.regular textarea {
                 width: 100%;
                 box-sizing: border-box;
+            }
+
+            form.regular textarea {
+                height: 5em;
             }
 
             form.regular select {
@@ -164,7 +168,7 @@
     <body>
     <div style="font-family: Garamond serif,serif; height: 80px; width: 100%; background-color: #4D8734; text-align: center; font-size: 50px; color: #fff;">
         <a style="font-size: 34px;"> </a><br/>
-        taskory</div>
+    </div>
     {% if is_granted('IS_AUTHENTICATED') %}
         <div style="padding: 12px; text-align: right; float: right"><a href="{{ path('user_logout') }}">logout</a></div>
     {% endif %}
