@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% form_theme task_form with _self %}
 
 {% block body %}
 	<table style="margin-bottom: 50px">
@@ -20,5 +21,107 @@
 		{% endfor %}
 		</tbody>
 	</table>
-	{{ form(task_form, {'attr': {'class': 'regular'}}) }}
+{{ form_start(task_form, {'attr': {'class': 'regular'}}) }}
+<div>
+	{{ form_row(task_form.name) }}
+	{{ form_row(task_form.description) }}
+	{{ form_row(task_form.duration) }}
+	{{ form_row(task_form.category) }}
+	{{ form_row(task_form.starts_at) }}
+	{{ form_row(task_form.has_recurrence) }}
+	{{ form_row(task_form.recurrence) }}
+	{{ form_row(task_form.ends_at) }}
+	{{ form_row(task_form.participants) }}
+	{{ form_row(task_form._token) }}
+	{{ form_row(task_form.save) }}
+	{{ form_row(task_form.cancel) }}
+</div>
+{{ form_end(task_form, {render_rest: false}) }}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+$(function() {
+    $('input[name="task_form[has_recurrence]"]').on('change', function () {
+        var optionChecked = $('input[name="task_form[has_recurrence]"]:checked');
+        var textValue = optionChecked.val();
+
+        if (textValue === "1")
+        {
+            $('#task_form_recurrence').show();
+		} else {
+            $('#task_form_recurrence').hide();
+		}
+	});
+
+    $('#task_form_recurrence_type').on('change', function () {
+        var optionSelected = $("option:selected", this);
+        var textValue = optionSelected.val();
+        var textText = optionSelected.text();
+
+        $('#task_form_recurrence_type_week').hide();
+        $('#task_form_recurrence_type_month').hide();
+        $('#task_form_recurrence_type_year').hide();
+
+        $('#task_form_recurrence_type_' + textText.toLowerCase()).show();
+
+        if (textText === 'Year')
+        {
+            $('#task_form_recurrence_interval').prop( "disabled", true );
+		} else {
+            $('#task_form_recurrence_interval').prop( "disabled", false );
+		}
+    });
+
+    $('input[name="task_form[recurrence][type_year][mode]"]').on('change', function () {
+        var optionChecked = $('input[name="task_form[recurrence][type_year][mode]"]:checked');
+        var textValue = optionChecked.val();
+
+        $('#task_form_recurrence_type_year_month_absolute').hide();
+        $('#task_form_recurrence_type_year_day_number').hide();
+        $('#task_form_recurrence_type_year_day_ordinal').hide();
+        $('#task_form_recurrence_type_year_day').hide();
+        $('#task_form_recurrence_type_year_month_relative').hide();
+        $('label[for="task_form_recurrence_type_year_month_relative"]').hide();
+
+        if (textValue === '1')
+        {
+            $('#task_form_recurrence_type_year_month_absolute').show();
+            $('#task_form_recurrence_type_year_day_number').show();
+		} else {
+            $('#task_form_recurrence_type_year_day_ordinal').show();
+            $('#task_form_recurrence_type_year_day').show();
+            $('label[for="task_form_recurrence_type_year_month_relative"]').show();
+            $('#task_form_recurrence_type_year_month_relative').show();
+		}
+	});
+
+    $('input[name="task_form[recurrence][type_month][mode]"]').on('change', function () {
+        var optionChecked = $('input[name="task_form[recurrence][type_month][mode]"]:checked');
+        var textValue = optionChecked.val();
+
+        $('#task_form_recurrence_type_month_day_number').hide();
+        $('#task_form_recurrence_type_month_week_ordinal').hide();
+        $('#task_form_recurrence_type_month_day').hide();
+
+        if (textValue === '1')
+        {
+            $('#task_form_recurrence_type_month_day_number').show();
+		} else {
+            $('#task_form_recurrence_type_month_week_ordinal').show();
+            $('#task_form_recurrence_type_month_day').show();
+		}
+	});
+
+    $('#task_form_recurrence_type').trigger( "change" );
+    $('input[name="task_form[recurrence][type_year][mode]"]').trigger( "change" );
+    $('input[name="task_form[recurrence][type_month][mode]"]').trigger( "change" );
+    $('input[name="task_form[has_recurrence]"]').trigger( "change" );
+})
+</script>
+{% endblock %}
+
+{% block _task_form_has_recurrence_row %}
+	{{ form_widget(form) }}
+	{{ form_label(form) }}
 {% endblock %}

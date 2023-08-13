@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
         <style>
             body {
                 padding: 0;
@@ -34,6 +35,14 @@
             form.regular {
                 display: flex;
                 justify-content:center;
+            }
+
+            form.regular .subform {
+                /*border: 1px solid #26272C;*/
+                padding: 5px;
+                /*border-radius: 5px;*/
+                display: block;
+                clear: both;
             }
 
             form.regular > div {
@@ -118,6 +127,10 @@
                 box-sizing: border-box;
             }
 
+            .subform *{
+                width: auto;
+            }
+
             form.regular textarea {
                 height: 5em;
             }
@@ -134,11 +147,15 @@
                 margin-right: 10px;
             }
 
-            form.regular input[type="checkbox"] {
+            form.regular input[type="checkbox"],  form.regular input[type="radio"] {
                display: none;
             }
 
-            form.regular input[type="checkbox"] + label {
+            form.regular input:disabled, form.regular select:disabled, form.regular textarea:disabled {
+                background-color: #9E9D87;
+            }
+
+            form.regular input[type="checkbox"] + label, form.regular input[type="radio"] + label {
                 margin-right: .7em;
             }
 
@@ -157,11 +174,40 @@
                 border-radius: 3px;
             }
 
+            form.regular input[type="radio"] + label:before {
+                border: none;
+                content: "\00a0";
+                display: inline-block;
+                font: 16px sans-serif;
+                line-height: 17px;
+                height: 1.0em;
+                width: 1.0em;
+                margin: 3px 4px 0 0;
+                padding: 0;
+                vertical-align: top;
+                background: #DDDCBE;
+                border-radius: 8px;
+            }
+
             form.regular input[type="checkbox"]:checked + label:before {
                 background: #DDDCBE;
                 color: #000;
                 content: "\2714";
                 text-align: center;
+            }
+
+            form.regular input[type="radio"]:checked + label:before {
+                background: #DDDCBE;
+                color: #000;
+                content: "\25CF";
+                text-align: center;
+            }
+
+
+
+
+            form.regular div .recurrence_week, form.regular div .recurrence_month, form.regular div .recurrence_year{
+                display: none;
             }
         {% block stylesheets %}
         {% endblock %}
@@ -170,8 +216,8 @@
         {% endblock %}
     </head>
     <body>
-    <div style="font-family: Garamond serif,serif; height: 80px; width: 100%; background-color: #4D8734; text-align: center; font-size: 50px; color: #fff;">
-        <a style="font-size: 34px;"> </a><br/>
+    <div style="font-family: Garamond serif,serif; height: 60px; width: 100%; background-color: #4D8734; padding: 10px; color: #fff;">
+        <a href="{{ path('task_overview') }}">home</a><br/>
     </div>
     {% if is_granted('IS_AUTHENTICATED') %}
         <div style="padding: 12px; text-align: right; float: right"><a href="{{ path('user_logout') }}">logout</a></div>

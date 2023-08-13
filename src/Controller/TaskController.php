@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Context\UserContext;
+use App\Forms\Enum\TaskRecurrence;
 use App\Forms\TaskDeleteForm;
 use App\Forms\TaskForm;
 use App\Task\Entity\Task;
+use App\Task\Enum\RecurrenceField;
+use App\Task\Enum\TaskRecurrenceMode;
 use App\Task\Provider\TaskProvider;
 use App\Task\TaskHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -89,7 +92,77 @@ class TaskController extends AbstractController
             $category = $form['category']->getData();
             $recurrenceStartsAt = $form['starts_at']->getData();
             $recurrenceEndsAt = $form['ends_at']->getData();
+            $recurrence = $form['recurrence']->getData();
             $participants = iterator_to_array($form['participants']->getData());
+
+            $recurrenceInterval = $form['recurrence']['interval']->getData();
+            $recurrenceType = $form['recurrence']['type']->getData();
+            $recurrenceTypeWeek = $form['recurrence']['type_week']->getData();
+            $recurrenceTypeMonth = $form['recurrence']['type_month']->getData();
+            $recurrenceTypeYear = $form['recurrence']['type_year']->getData();
+
+            switch(TaskRecurrence::from($recurrenceType))
+            {
+                case TaskRecurrence::Day:
+                    $fields = [
+                        RecurrenceField::DayInterval->value => $recurrenceInterval,
+                    ];
+                    break;
+
+                case TaskRecurrence::Week:
+                    $fields = [
+                        RecurrenceField::WeekInterval->value => $recurrenceInterval,
+                        RecurrenceField::WeekDays->value => $recurrenceTypeWeek['days'],
+                    ];
+                    break;
+
+                case TaskRecurrence::Month:
+                    switch (TaskRecurrenceMode::from($recurrenceTypeMonth['mode']))
+                    {
+                        case TaskRecurrenceMode::Absolute:
+                            $fields = [
+                                RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
+                                RecurrenceField::MonthInterval->value => $recurrenceInterval,
+                                RecurrenceField::MonthAbsoluteDayNumber->value => $recurrenceTypeMonth['day_number'],
+                            ];
+                            break;
+
+                        case TaskRecurrenceMode::Relative:
+                            $fields = [
+                                RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
+                                RecurrenceField::MonthInterval->value => $recurrenceInterval,
+                                RecurrenceField::MonthRelativeWeekOrdinal->value => $recurrenceTypeMonth['week_ordinal'],
+                                RecurrenceField::MonthRelativeDay->value => $recurrenceTypeMonth['day'],
+                            ];
+                            break;
+                    }
+
+                    break;
+
+                case TaskRecurrence::Year:
+                    switch (TaskRecurrenceMode::from($recurrenceTypeYear['mode']))
+                    {
+                        case TaskRecurrenceMode::Absolute:
+                            $fields = [
+                                RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
+                                RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_absolute'],
+                                RecurrenceField::YearAbsoluteDayNumber->value => $recurrenceTypeYear['day_number'],
+                            ];
+                            break;
+
+                        case TaskRecurrenceMode::Relative:
+                            $fields = [
+                                RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
+                                RecurrenceField::YearRelativeDayOrdinal->value => $recurrenceTypeYear['day_ordinal'],
+                                RecurrenceField::YearRelativeDay->value => $recurrenceTypeYear['day'],
+                                RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_relative'],
+                            ];
+                            break;
+                    }
+                    break;
+            }
+
+            $x = $fields;
 
             $this->taskHandler->update($task, $name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participants);
 
