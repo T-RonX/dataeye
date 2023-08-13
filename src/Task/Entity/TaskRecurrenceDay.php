@@ -9,18 +9,18 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class TaskRecurrenceDay extends TaskRecurrence
 {
-    #[ORM\Column(type: 'smallint')]
-    private int $dayNumber;
+    #[ORM\Column(name: 'interv', type: 'smallint')]
+    private int $interval;
 
-    public function setDayNumber(int $dayNumber): self
+    public function setInterval(int $interval): self
     {
-        $this->dayNumber = $dayNumber;
+        $this->interval = $interval;
 
         return $this;
     }
 
-    public function getDayNumber(): int
+    public function getInterval(): int
     {
-        return $this->dayNumber;
+        return $this->interval;
     }
 }

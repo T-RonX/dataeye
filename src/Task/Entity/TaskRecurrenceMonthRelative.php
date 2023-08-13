@@ -11,11 +11,26 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class TaskRecurrenceMonthRelative extends TaskRecurrence
 {
+    #[ORM\Column(name: 'interv', type: 'smallint')]
+    private int $interval;
+
     #[ORM\Column(type: 'smallint')]
     private int $weekOrdinal;
 
     #[ORM\Column(type: 'smallint')]
     private int $day;
+
+    public function getInterval(): int
+    {
+        return $this->interval;
+    }
+
+    public function setInterval(int $interval): self
+    {
+        $this->interval = $interval;
+
+        return $this;
+    }
 
     public function setWeekOrdinal(WeekOrdinal $weekOrdinal): self
     {

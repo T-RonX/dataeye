@@ -149,6 +149,7 @@ class Load020_Task extends Fixture
             ->setTask($this->getReference('user_1_task_1', Task::class))
             ->setStartsAt(new DateTimeImmutable('2024-1-1 00:00:00'))
             ->setEndsAt(null)
+            ->setInterval(14)
             ->setWeekOrdinal(WeekOrdinal::Last)
             ->setDay(Day::Friday);
 
@@ -156,7 +157,7 @@ class Load020_Task extends Fixture
             ->setTask($this->getReference('user_1_task_2', Task::class))
             ->setStartsAt(new DateTimeImmutable('2000-1-1 00:00:00'))
             ->setEndsAt(new DateTimeImmutable('2050-1-1 23:59:59'))
-            ->setDayNumber(20);
+            ->setInterval(20);
 
         $recurrence_4 = (new TaskRecurrenceWeek())
             ->setTask($this->getReference('user_2_task_1', Task::class))
