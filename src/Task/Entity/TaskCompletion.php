@@ -15,7 +15,7 @@ class TaskCompletion
     #[ORM\Column]
     private ?int $id;
 
-    #[ORM\ManyToOne(targetEntity: Task::class)]
+    #[ORM\ManyToOne(targetEntity: Task::class, inversedBy: 'completions')]
     #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id', nullable: false)]
     private Task $task;
 

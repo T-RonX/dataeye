@@ -36,43 +36,31 @@ class Task implements EntityUuidInterface
     private User $ownedBy;
 
     #[ORM\ManyToOne(targetEntity: TaskCategory::class)]
-    #[ORM\JoinColumn(name: 'category', referencedColumnName: "id")]
-    private TaskCategory $category;
+    #[ORM\JoinColumn(name: 'category', referencedColumnName: 'id', nullable: true)]
+    private ?TaskCategory $category;
 
     /**
      * @var Collection<int, TaskRecurrence>
      */
-//    #[ORM\JoinTable(name: 'task_recurrences')]
-//    #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id')]
-//    #[ORM\InverseJoinColumn(name: 'recurrence', referencedColumnName: 'id', unique: true)]
     #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskRecurrence::class)]
     private Collection $recurrences;
 
     /**
      * @var Collection<int, TaskParticipant>
      */
-    #[ORM\JoinTable(name: 'task_participants')]
-    #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'participant', referencedColumnName: 'id', unique: true)]
-    #[ORM\ManyToMany(targetEntity: TaskParticipant::class)]
+    #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskParticipant::class)]
     private Collection $participants;
 
     /**
      * @var Collection<int, TaskCompletion>
      */
-    #[ORM\JoinTable(name: 'task_completions')]
-    #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'completion', referencedColumnName: 'id', unique: true)]
-    #[ORM\ManyToMany(targetEntity: TaskCompletion::class)]
+    #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskCompletion::class)]
     private Collection $completions;
 
     /**
      * @var Collection<int, TaskPostpone>
      */
-    #[ORM\JoinTable(name: 'task_postpones')]
-    #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'postpone', referencedColumnName: 'id', unique: true)]
-    #[ORM\ManyToMany(targetEntity: TaskPostpone::class)]
+    #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskPostpone::class)]
     private Collection $postpones;
 
     public function __construct()
@@ -142,12 +130,12 @@ class Task implements EntityUuidInterface
         return $this;
     }
     
-    public function getCategory(): TaskCategory
+    public function getCategory(): ?TaskCategory
     {
         return $this->category;
     }
     
-    public function setCategory(TaskCategory $category): self
+    public function setCategory(?TaskCategory $category): self
     {
         $this->category = $category;
 

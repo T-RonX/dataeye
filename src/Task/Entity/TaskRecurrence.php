@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\InheritanceType('JOINED')]
-#[ORM\DiscriminatorColumn(name: 'type', type: 'smallint', length: 2)]
+#[ORM\DiscriminatorColumn(name: 'type', type: 'smallint')]
 #[ORM\DiscriminatorMap([
     1 => TaskRecurrenceDay::class,
     2 => TaskRecurrenceWeek::class,
@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
     5 => TaskRecurrenceYearAbsolute::class,
     6 => TaskRecurrenceYearRelative::class,
 ])]
-class TaskRecurrence
+abstract class TaskRecurrence
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
