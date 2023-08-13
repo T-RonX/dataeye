@@ -65,9 +65,10 @@ class TaskForm extends AbstractType
             ])
             ->add('participants', EntityType::class, [
                 'class' => User::class,
+                'mapped' => false,
                 'required' => false,
                 'choice_label' => 'username',
-                'choices' => $user->getAssociatedWith(),
+                'choices' => $user->getAssociatedWith()->toArray(),
                 'data' => $participants,
                 'multiple' => true,
                 'expanded' => true,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Collection;
 
-use App\Task\CollectionUpdate;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 

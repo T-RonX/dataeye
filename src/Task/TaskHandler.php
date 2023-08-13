@@ -47,12 +47,16 @@ readonly class TaskHandler implements FacadeInterface
         });
     }
 
-    public function update(Task|int $task, string $name): Task
+    public function update(Task|int $task, string $name, string $description, int $duration, TaskCategory|int $category, DateTime|string $recurrenceStartsAt, DateTime|string $recurrenceEndsAt, array|string $participatingUsers): Task
     {
-        return $this->entityManager->wrapInTransaction(function() use($task, $name): Task {
+        return $this->entityManager->wrapInTransaction(function() use($task, $name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participatingUsers): Task {
             $task = $this->taskProvider->resolveTask($task);
+            $category = $this->taskCategoryProvider->resolveTaskCategory($category);
+            $recurrenceStartsAt = $recurrenceStartsAt instanceof DateTime ? $recurrenceStartsAt : new DateTime($recurrenceStartsAt);
+            $recurrenceEndsAt = $recurrenceEndsAt instanceof DateTime ? $recurrenceEndsAt : new DateTime($recurrenceEndsAt);
+            array_map(fn(User|int $participant) => $this->userProvider->resolveUser($participant), $participatingUsers);
 
-            return $this->updater->update($task, $name);
+            return $this->updater->update($task, $name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participatingUsers);
         });
     }
     public function delete(Task|int $task): void

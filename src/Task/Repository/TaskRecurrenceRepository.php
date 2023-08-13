@@ -6,7 +6,7 @@ namespace App\Task\Repository;
 
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskRecurrence;
-use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,7 +17,7 @@ class TaskRecurrenceRepository extends ServiceEntityRepository
         parent::__construct($registry, TaskRecurrence::class);
     }
 
-    public function getByTaskAndDate(Task $task, DateTime $dateTime): ?TaskRecurrence
+    public function getByTaskAndDate(Task $task, DateTimeInterface $dateTime): ?TaskRecurrence
     {
         return $this->createQueryBuilder('i')
             ->where('i.task = :task')

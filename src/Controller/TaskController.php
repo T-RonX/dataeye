@@ -84,7 +84,14 @@ class TaskController extends AbstractController
         if ($form->isSubmitted() && $form->isValid())
         {
             $name = $form['name']->getData();
-            $this->taskHandler->update($task, $name);
+            $description = $form['description']->getData();
+            $duration = (int) $form['duration']->getData();
+            $category = $form['category']->getData();
+            $recurrenceStartsAt = $form['starts_at']->getData();
+            $recurrenceEndsAt = $form['ends_at']->getData();
+            $participants = iterator_to_array($form['participants']->getData());
+
+            $this->taskHandler->update($task, $name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participants);
 
             return $this->redirectToRoute('task_overview');
         }
