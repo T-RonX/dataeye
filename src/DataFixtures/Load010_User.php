@@ -18,20 +18,31 @@ class Load010_User extends Fixture
         $user_1->setPassword(password_hash('user1', PASSWORD_BCRYPT));
 
         $this->addReference('user_1', $user_1);
+        $manager->persist($user_1);
 
         $user_2 = new User();
         $user_2->setUsername('user2');
         $user_2->setPassword(password_hash('user2', PASSWORD_BCRYPT));
 
         $this->addReference('user_2', $user_2);
+        $manager->persist($user_2);
+
+        $user_3 = new User();
+        $user_3->setUsername('user3');
+        $user_3->setPassword(password_hash('user3', PASSWORD_BCRYPT));
+
+        $this->addReference('user_3', $user_1);
+        $manager->persist($user_3);
 
         $user_1->getAssociatedWith()->add($user_2);
         $user_1->getAssociatedTo()->add($user_2);
+        $user_1->getAssociatedWith()->add($user_3);
+        $user_1->getAssociatedTo()->add($user_3);
         $user_2->getAssociatedWith()->add($user_1);
         $user_2->getAssociatedTo()->add($user_1);
 
-        $manager->persist($user_1);
-        $manager->persist($user_2);
+
+
 
         $manager->flush();
     }
