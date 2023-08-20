@@ -19,6 +19,6 @@ readonly class TaskRecurrenceProvider
 
     public function getCurrentTaskRecurrence(Task $task): ?TaskRecurrence
     {
-        return $this->repository->getByTaskAndDate($task, $this->dateTimeProvider->getNow());
+        return $this->repository->getCurrentByTask($task, $this->dateTimeProvider->getNow());
     }
 }

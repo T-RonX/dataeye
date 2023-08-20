@@ -8,9 +8,11 @@ use App\Collection\DoctrineCollectionUpdater;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Entity\TaskParticipant;
+use App\Task\Enum\RecurrenceType;
 use App\Task\Factory\TaskFactory;
+use App\Task\Recurrence\Recurrence;
 use App\User\Entity\User;
-use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class TaskUpdater
@@ -19,15 +21,18 @@ readonly class TaskUpdater
         private EntityManagerInterface $entityManager,
         private TaskFactory $factory,
         private DoctrineCollectionUpdater $collectionUpdater,
+        private Recurrence $recurrence,
     ) {
     }
-    public function update(Task $task, string $name, string $description, int $duration, TaskCategory $category, DateTime $recurrenceStartsAt, DateTime $recurrenceEndsAt, array $participatingUsers): Task
+
+    public function update(Task $task, string $name, string $description, int $duration, ?TaskCategory $category, array $participatingUsers, DateTimeInterface $startsAt, ?DateTimeInterface $recurrenceEndsAt, ?RecurrenceType $recurrence, array $recurrenceParams = []): Task
     {
         $task->setName($name)
             ->setDescription($description)
             ->setDuration($duration)
             ->setCategory($category);
 
+        $this->recurrence->setForTask($task, $startsAt, $recurrenceEndsAt, $recurrence, $recurrenceParams);
         $this->updateParticipants($task, [$task->getOwnedBy(), ...$participatingUsers]);
 
         $this->entityManager->persist($task);

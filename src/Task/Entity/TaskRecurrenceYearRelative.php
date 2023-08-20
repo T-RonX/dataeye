@@ -7,6 +7,7 @@ namespace App\Task\Entity;
 use App\Task\Enum\Day;
 use App\Task\Enum\DayOrdinal;
 use App\Task\Enum\Month;
+use App\Task\Enum\RecurrenceType;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -55,5 +56,10 @@ class TaskRecurrenceYearRelative extends TaskRecurrence
     public function getDay(): Day
     {
         return Day::from($this->day);
+    }
+
+    public function getRecurrenceType(): RecurrenceType
+    {
+        return RecurrenceType::Year;
     }
 }

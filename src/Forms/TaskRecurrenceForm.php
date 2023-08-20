@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Forms;
 
-use App\DateTimeProvider\DateTimeProvider;
-use App\Forms\Enum\TaskRecurrence;
-use App\Forms\Exception\MissingFormOptionException;
+use App\Task\Contract\RecurrenceIntervalInterface;
 use App\Task\Entity\Task;
+use App\Task\Entity\TaskRecurrence;
+use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskRecurrenceProvider;
-use App\User\Entity\User;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -20,40 +19,33 @@ class TaskRecurrenceForm extends AbstractType
 {
     public function __construct(
         private readonly TaskRecurrenceProvider $taskRecurrenceProvider,
-        private readonly DateTimeProvider $dateTimeProvider,
     ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $task = $this->getTask($options);
-        $user = $this->getUser($options);
-
-        $recurrence = $task ? $this->taskRecurrenceProvider->getCurrentTaskRecurrence($task) : null;
+        $recurrence = $this->getRecurrence($task);
 
         $builder
             ->add('interval', IntegerType::class, [
                 'label' => false,
-                'data' => 1,
+                'data' => $recurrence instanceof RecurrenceIntervalInterface ? $recurrence->getInterval() : 1,
                 'attr' => [
                     'min' => 1,
                     'max' => 100,
                 ]
             ])
-            ->add('type', ChoiceType::class, [
+            ->add('type', EnumType::class, [
                 'label' => false,
-                'choices' => [
-                    TaskRecurrence::Day->name => TaskRecurrence::Day->value,
-                    TaskRecurrence::Week->name => TaskRecurrence::Week->value,
-                    TaskRecurrence::Month->name => TaskRecurrence::Month->value,
-                    TaskRecurrence::Year->name => TaskRecurrence::Year->value,
-                ]
+                'class' => RecurrenceType::class,
+                'data' => $recurrence?->getRecurrenceType(),
             ])
             ->add('type_week', TaskRecurrenceWeekForm::class, [
                 'label' => false,
                 'required' => false,
                 'task' => $task,
-                'user' => $user,
+                'recurrence' => $recurrence,
                 'attr' => [
                     'class' => 'subform recurrence_week',
                 ]
@@ -62,7 +54,7 @@ class TaskRecurrenceForm extends AbstractType
                 'label' => false,
                 'required' => false,
                 'task' => $task,
-                'user' => $user,
+                'recurrence' => $recurrence,
                 'attr' => [
                     'class' => 'subform recurrence_month'
                 ]
@@ -71,29 +63,28 @@ class TaskRecurrenceForm extends AbstractType
                 'label' => false,
                 'required' => false,
                 'task' => $task,
-                'user' => $user,
+                'recurrence' => $recurrence,
                 'attr' => [
                     'class' => 'subform recurrence_year'
                 ]
             ]);
-
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'user' => null,
+            'recurrence' => null,
             'task' => null,
         ]);
-    }
-
-    private function getUser(array $options): User
-    {
-        return $options['user'] ?? throw new MissingFormOptionException('user', $this::class);
     }
 
     private function getTask(array $options): ?Task
     {
         return $options['task'] ?? null;
+    }
+
+    private function getRecurrence(?Task $task): ?TaskRecurrence
+    {
+        return $task ? $this->taskRecurrenceProvider->getCurrentTaskRecurrence($task) : null;
     }
 }

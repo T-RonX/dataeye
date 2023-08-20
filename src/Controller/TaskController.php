@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Context\UserContext;
-use App\Forms\Enum\TaskRecurrence;
 use App\Forms\TaskDeleteForm;
 use App\Forms\TaskForm;
 use App\Task\Entity\Task;
 use App\Task\Enum\RecurrenceField;
-use App\Task\Enum\TaskRecurrenceMode;
+use App\Task\Enum\RecurrenceMode;
+use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskProvider;
 use App\Task\TaskHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,11 +60,15 @@ class TaskController extends AbstractController
             $description = $form['description']->getData();
             $duration = (int) $form['duration']->getData();
             $category = $form['category']->getData();
+            $participants = iterator_to_array($form['participants']->getData());
             $recurrenceStartsAt = $form['starts_at']->getData();
             $recurrenceEndsAt = $form['ends_at']->getData();
-            $participants = iterator_to_array($form['participants']->getData());
+            $recurrenceForm = $form['recurrence'];
+            $hasRecurrence = $form['has_recurrence']->getData();
+            $recurrenceType = $hasRecurrence ? $recurrenceForm['type']->getData() : null;
+            $recurrenceParameters = $hasRecurrence ? $this->getRecurrenceFieldData($recurrenceForm) : [];
 
-            $this->taskHandler->create($name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participants);
+            $this->taskHandler->create($name, $description, $duration, $category, $participants, $recurrenceStartsAt, $recurrenceEndsAt, $recurrenceType, $recurrenceParameters);
 
             return $this->redirectToRoute('task_overview');
         }
@@ -92,79 +97,13 @@ class TaskController extends AbstractController
             $category = $form['category']->getData();
             $recurrenceStartsAt = $form['starts_at']->getData();
             $recurrenceEndsAt = $form['ends_at']->getData();
-            $recurrence = $form['recurrence']->getData();
             $participants = iterator_to_array($form['participants']->getData());
+            $recurrenceForm = $form['recurrence'];
+            $hasRecurrence = $form['has_recurrence']->getData();
+            $recurrenceType = $hasRecurrence ? $recurrenceForm['type']->getData() : null;
+            $recurrenceParameters = $hasRecurrence ? $this->getRecurrenceFieldData($recurrenceForm) : [];
 
-            $recurrenceInterval = $form['recurrence']['interval']->getData();
-            $recurrenceType = $form['recurrence']['type']->getData();
-            $recurrenceTypeWeek = $form['recurrence']['type_week']->getData();
-            $recurrenceTypeMonth = $form['recurrence']['type_month']->getData();
-            $recurrenceTypeYear = $form['recurrence']['type_year']->getData();
-
-            switch(TaskRecurrence::from($recurrenceType))
-            {
-                case TaskRecurrence::Day:
-                    $fields = [
-                        RecurrenceField::DayInterval->value => $recurrenceInterval,
-                    ];
-                    break;
-
-                case TaskRecurrence::Week:
-                    $fields = [
-                        RecurrenceField::WeekInterval->value => $recurrenceInterval,
-                        RecurrenceField::WeekDays->value => $recurrenceTypeWeek['days'],
-                    ];
-                    break;
-
-                case TaskRecurrence::Month:
-                    switch (TaskRecurrenceMode::from($recurrenceTypeMonth['mode']))
-                    {
-                        case TaskRecurrenceMode::Absolute:
-                            $fields = [
-                                RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
-                                RecurrenceField::MonthInterval->value => $recurrenceInterval,
-                                RecurrenceField::MonthAbsoluteDayNumber->value => $recurrenceTypeMonth['day_number'],
-                            ];
-                            break;
-
-                        case TaskRecurrenceMode::Relative:
-                            $fields = [
-                                RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
-                                RecurrenceField::MonthInterval->value => $recurrenceInterval,
-                                RecurrenceField::MonthRelativeWeekOrdinal->value => $recurrenceTypeMonth['week_ordinal'],
-                                RecurrenceField::MonthRelativeDay->value => $recurrenceTypeMonth['day'],
-                            ];
-                            break;
-                    }
-
-                    break;
-
-                case TaskRecurrence::Year:
-                    switch (TaskRecurrenceMode::from($recurrenceTypeYear['mode']))
-                    {
-                        case TaskRecurrenceMode::Absolute:
-                            $fields = [
-                                RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
-                                RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_absolute'],
-                                RecurrenceField::YearAbsoluteDayNumber->value => $recurrenceTypeYear['day_number'],
-                            ];
-                            break;
-
-                        case TaskRecurrenceMode::Relative:
-                            $fields = [
-                                RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
-                                RecurrenceField::YearRelativeDayOrdinal->value => $recurrenceTypeYear['day_ordinal'],
-                                RecurrenceField::YearRelativeDay->value => $recurrenceTypeYear['day'],
-                                RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_relative'],
-                            ];
-                            break;
-                    }
-                    break;
-            }
-
-            $x = $fields;
-
-            $this->taskHandler->update($task, $name, $description, $duration, $category, $recurrenceStartsAt, $recurrenceEndsAt, $participants);
+            $this->taskHandler->update($task, $name, $description, $duration, $category, $participants, $recurrenceStartsAt, $recurrenceEndsAt, $recurrenceType, $recurrenceParameters);
 
             return $this->redirectToRoute('task_overview');
         }
@@ -177,6 +116,80 @@ class TaskController extends AbstractController
             'task_delete_forms' => $deleteForms,
             'tasks' => $tasks,
         ]);
+    }
+
+    private function getRecurrenceFieldData(Form $form): array
+    {
+        $recurrenceInterval = $form['interval']->getData();
+        $recurrenceType = $form['type']->getData();
+        $recurrenceTypeWeek = $form['type_week']->getData();
+        $recurrenceTypeMonth = $form['type_month']->getData();
+        $recurrenceTypeYear = $form['type_year']->getData();
+
+        $fields = [];
+
+        switch ($recurrenceType)
+        {
+            case RecurrenceType::Day:
+                $fields = [
+                    RecurrenceField::DayInterval->value => $recurrenceInterval,
+                ];
+                break;
+
+            case RecurrenceType::Week:
+                $fields = [
+                    RecurrenceField::WeekInterval->value => $recurrenceInterval,
+                    RecurrenceField::WeekDays->value => $recurrenceTypeWeek['days'],
+                ];
+                break;
+
+            case RecurrenceType::Month:
+                switch ($recurrenceTypeMonth['mode'])
+                {
+                    case RecurrenceMode::Absolute:
+                        $fields = [
+                            RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
+                            RecurrenceField::MonthInterval->value => $recurrenceInterval,
+                            RecurrenceField::MonthAbsoluteDayNumber->value => $recurrenceTypeMonth['day_number'],
+                        ];
+                        break;
+
+                    case RecurrenceMode::Relative:
+                        $fields = [
+                            RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
+                            RecurrenceField::MonthInterval->value => $recurrenceInterval,
+                            RecurrenceField::MonthRelativeWeekOrdinal->value => $recurrenceTypeMonth['week_ordinal'],
+                            RecurrenceField::MonthRelativeDay->value => $recurrenceTypeMonth['day'],
+                        ];
+                        break;
+                }
+
+                break;
+
+            case RecurrenceType::Year:
+                switch ($recurrenceTypeYear['mode'])
+                {
+                    case RecurrenceMode::Absolute:
+                        $fields = [
+                            RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
+                            RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_absolute'],
+                            RecurrenceField::YearAbsoluteDayNumber->value => $recurrenceTypeYear['day_number'],
+                        ];
+                        break;
+
+                    case RecurrenceMode::Relative:
+                        $fields = [
+                            RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
+                            RecurrenceField::YearRelativeDayOrdinal->value => $recurrenceTypeYear['day_ordinal'],
+                            RecurrenceField::YearRelativeDay->value => $recurrenceTypeYear['day'],
+                            RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_relative'],
+                        ];
+                        break;
+                }
+                break;
+        }
+
+        return $fields;
     }
 
     #[Route('/task/delete/{task}', 'task_delete', requirements: ['task' => '.{36}'], methods: ['post'])]

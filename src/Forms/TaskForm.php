@@ -17,6 +17,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -60,16 +61,17 @@ class TaskForm extends AbstractType
             ])
             ->add('has_recurrence', CheckboxType::class, [
                 'label' => 'Repeat every...',
+                'data' => $recurrence !== null,
                 'required' => false,
                 'mapped' => false,
             ])
             ->add('recurrence', TaskRecurrenceForm::class, [
                 'mapped' => false,
                 'label' => false,
-                'user' => $user,
                 'task' => $task,
+                'recurrence' => $recurrence,
             ])
-            ->add('ends_at', DateTimeType::class, [
+            ->add('ends_at', DateType::class, [
                 'mapped' => false,
                 'widget' => 'single_text',
                 'data' => $recurrence?->getEndsAt(),

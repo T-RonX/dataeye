@@ -10,7 +10,6 @@ readonly class CollectionUpdate
         private array $added,
         private array $removed
     ) {
-
     }
 
     public function getAdded(): array

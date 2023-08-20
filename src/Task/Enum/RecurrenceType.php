@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Forms\Enum;
+namespace App\Task\Enum;
 
-enum TaskRecurrence: int
+enum RecurrenceType: int
 {
     case Day = 1;
     case Week = 2;

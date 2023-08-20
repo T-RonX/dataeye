@@ -98,7 +98,7 @@ readonly class DoctrineCollectionUpdater
             if ($collectionItem !== null)
             {
                 $collection->removeElement($collectionItem);
-                $this->entityManager->remove($collectionItem);
+                //$this->entityManager->remove($collectionItem);
             }
 
             $removedItems[] = $collectionItem;

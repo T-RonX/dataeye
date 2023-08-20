@@ -22,9 +22,34 @@ class TaskRecurrenceRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('i')
             ->where('i.task = :task')
             ->andWhere('i.startsAt <= :datetime AND (i.endsAt > :datetime OR i.endsAt IS NULL)')
+            ->andWhere('i.deletedAt IS NULL')
             ->setParameter('task', $task)
             ->setParameter('datetime', $dateTime)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+
+    public function getCurrentByTask(Task $task): ?TaskRecurrence
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.task = :task')
+            ->andWhere('i.deletedAt IS NULL')
+            ->setParameter('task', $task)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @return TaskRecurrence[]
+     */
+    public function getByTaskOrderedByDate(Task $task): array
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.task = :task')
+            ->andWhere('i.deletedAt IS NULL')
+            ->setParameter('task', $task)
+            ->getQuery()
+            ->getResult();
     }
 }

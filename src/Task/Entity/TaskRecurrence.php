@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Task\Entity;
 
-use DateTimeImmutable;
+use App\Task\Enum\RecurrenceType;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -29,11 +30,16 @@ abstract class TaskRecurrence
     #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id', nullable: false)]
     private Task $task;
 
-    #[ORM\Column(name: 'starts_at', type: 'datetimetz_immutable')]
-    private DateTimeImmutable $startsAt;
+    #[ORM\Column(name: 'starts_at', type: 'datetimetz')]
+    private DateTimeInterface $startsAt;
 
-    #[ORM\Column(name: 'ends_at', type: 'datetimetz_immutable' , nullable: true)]
-    private ?DateTimeImmutable $endsAt;
+    #[ORM\Column(name: 'ends_at', type: 'datetimetz' , nullable: true)]
+    private ?DateTimeInterface $endsAt;
+
+    #[ORM\Column(name: 'deleted_at', type: 'datetimetz' , nullable: true)]
+    private ?DateTimeInterface $deletedAt;
+
+    abstract public function getRecurrenceType(): RecurrenceType;
 
     public function getId(): ?int
     {
@@ -57,26 +63,38 @@ abstract class TaskRecurrence
         return $this;
     }
 
-    public function getStartsAt(): DateTimeImmutable
+    public function getStartsAt(): DateTimeInterface
     {
         return $this->startsAt;
     }
 
-    public function setStartsAt(DateTimeImmutable $startsAt): self
+    public function setStartsAt(DateTimeInterface $startsAt): self
     {
         $this->startsAt = $startsAt;
 
         return $this;
     }
 
-    public function getEndsAt(): ?DateTimeImmutable
+    public function getEndsAt(): ?DateTimeInterface
     {
         return $this->endsAt;
     }
 
-    public function setEndsAt(?DateTimeImmutable $endsAt): self
+    public function setEndsAt(?DateTimeInterface $endsAt): self
     {
         $this->endsAt = $endsAt;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }

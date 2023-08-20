@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Task\Entity;
 
 use App\Task\Enum\Month;
+use App\Task\Enum\RecurrenceType;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -38,5 +39,10 @@ class TaskRecurrenceYearAbsolute extends TaskRecurrence
     public function getDayNumber(): int
     {
         return $this->dayNumber;
+    }
+
+    public function getRecurrenceType(): RecurrenceType
+    {
+        return RecurrenceType::Year;
     }
 }

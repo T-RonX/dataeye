@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Task\Entity;
 
+use App\Task\Contract\RecurrenceIntervalInterface;
 use App\Task\Enum\Day;
+use App\Task\Enum\RecurrenceType;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-class TaskRecurrenceWeek extends TaskRecurrence
+class TaskRecurrenceWeek extends TaskRecurrence implements RecurrenceIntervalInterface
 {
     #[ORM\Column(name: 'interv', type: 'smallint')]
     private int $interval;
@@ -44,5 +46,10 @@ class TaskRecurrenceWeek extends TaskRecurrence
     public function getDays(): array
     {
         return array_map(static fn(int $day) => Day::from($day), explode(',', $this->days));
+    }
+
+    public function getRecurrenceType(): RecurrenceType
+    {
+        return RecurrenceType::Week;
     }
 }
