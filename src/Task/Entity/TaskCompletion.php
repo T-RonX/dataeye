@@ -23,7 +23,7 @@ class TaskCompletion
     #[ORM\JoinColumn(name: 'completion_by', referencedColumnName: 'id', nullable: false)]
     private TaskParticipant $completionBy;
 
-    #[ORM\Column(type: 'datetimetz_immutable')]
+    #[ORM\Column(type: 'datetime_immutable')]
     private DateTimeImmutable $completionAt;
     
     public function getId(): ?int

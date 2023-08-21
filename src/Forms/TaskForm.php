@@ -106,7 +106,7 @@ class TaskForm extends AbstractType
 
     private function getUser(array $options): User
     {
-        return $options['user'] ?? throw new MissingFormOptionException('user', $this::class);
+        return $options['user'] ?? throw new MissingFormOptionException('user', self::class);
     }
 
     private function getTask(array $options): ?Task

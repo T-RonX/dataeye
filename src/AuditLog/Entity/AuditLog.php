@@ -26,7 +26,7 @@ class AuditLog
     #[ORM\Column]
     private int $mode;
 
-    #[ORM\Column(type: 'datetimetz_immutable')]
+    #[ORM\Column(type: 'datetime_immutable')]
     private DateTimeImmutable $date;
 
     public function setEntity(AuditLogEntity $entity): self

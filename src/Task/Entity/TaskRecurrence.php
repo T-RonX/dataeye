@@ -30,13 +30,13 @@ abstract class TaskRecurrence
     #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id', nullable: false)]
     private Task $task;
 
-    #[ORM\Column(name: 'starts_at', type: 'datetimetz')]
+    #[ORM\Column(name: 'starts_at', type: 'datetime_immutable')]
     private DateTimeInterface $startsAt;
 
-    #[ORM\Column(name: 'ends_at', type: 'datetimetz' , nullable: true)]
+    #[ORM\Column(name: 'ends_at', type: 'datetime_immutable' , nullable: true)]
     private ?DateTimeInterface $endsAt;
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetimetz' , nullable: true)]
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable' , nullable: true)]
     private ?DateTimeInterface $deletedAt;
 
     abstract public function getRecurrenceType(): RecurrenceType;

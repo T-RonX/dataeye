@@ -11,6 +11,9 @@ doctrine:
                 password: '%env(MYSQL_PASSWORD)%'
                 dbname: '%env(MYSQL_DBNAME)%'
                 profiling_collect_backtrace: '%kernel.debug%'
+        types:
+            datetime_immutable: 'Carbon\Doctrine\DateTimeImmutableType'
+            datetime: 'Carbon\Doctrine\DateTimeType'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true

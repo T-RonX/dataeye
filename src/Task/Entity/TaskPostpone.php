@@ -23,7 +23,7 @@ class TaskPostpone
     #[ORM\JoinColumn(name: 'postponed_by', referencedColumnName: 'id', nullable: false)]
     private TaskParticipant $postponedBy;
 
-    #[ORM\Column(name: 'postponed_at', type: 'datetimetz_immutable')]
+    #[ORM\Column(name: 'postponed_at', type: 'datetime_immutable')]
     private DateTimeImmutable $postponedAt;
     
     public function getId(): ?int
