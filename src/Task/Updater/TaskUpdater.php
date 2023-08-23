@@ -10,6 +10,7 @@ use App\Task\Entity\TaskCategory;
 use App\Task\Entity\TaskParticipant;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Factory\TaskFactory;
+use App\Task\Provider\TaskParticipantProvider;
 use App\Task\Recurrence\Recurrence;
 use App\User\Entity\User;
 use DateTimeInterface;
@@ -22,6 +23,7 @@ readonly class TaskUpdater
         private TaskFactory $factory,
         private DoctrineCollectionUpdater $collectionUpdater,
         private Recurrence $recurrence,
+        private TaskParticipantProvider $participantProvider,
     ) {
     }
 
@@ -44,7 +46,7 @@ readonly class TaskUpdater
     private function updateParticipants(Task $task, array $users): void
     {
         $update = $this->collectionUpdater->update(
-            $task->getParticipants(),
+            $this->participantProvider->getTaskParticipantsCollection($task),
             $users,
             static fn (TaskParticipant $participant): User => $participant->getUser(),
         );

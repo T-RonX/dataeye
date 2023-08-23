@@ -7,6 +7,7 @@ namespace App\Task\Provider;
 use App\Exception\ItemNotFoundException;
 use App\Task\Entity\Task;
 use App\Task\Repository\TaskRepository;
+use App\User\Entity\User;
 
 readonly class TaskProvider
 {
@@ -31,6 +32,14 @@ readonly class TaskProvider
     public function getAllTask(): array
     {
         return $this->repository->findAll();
+    }
+
+    /**
+     * @return Task[]
+     */
+    public function getTaskByUser(User $user): array
+    {
+        return $this->repository->getByUser($user);
     }
 
     public function resolveTask(Task|int $item): Task

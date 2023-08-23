@@ -12,6 +12,7 @@ use App\Task\Enum\RecurrenceField;
 use App\Task\Enum\RecurrenceMode;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskProvider;
+use App\Task\Provider\TaskRecurrenceProvider;
 use App\Task\TaskHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Form;
@@ -27,16 +28,17 @@ class TaskController extends AbstractController
         private readonly TaskProvider $taskProvider,
         private readonly TaskHandler $taskHandler,
         private readonly UserContext $userContext,
+        private readonly TaskRecurrenceProvider $recurrenceProvider,
     ) {
     }
 
     #[Route('/{task}', 'task_overview', requirements: ['task' => '.{36}'] ,  defaults: ['task' => null], methods: ['get'])]
     public function index(Task $task = null): Response
     {
-        $tasks = $this->taskProvider->getAllTask();
+        $tasks = $this->taskProvider->getTaskByUser($this->userContext->getUser());
         $form = $this->createTaskForm($task, match(true) {
             $task === null => $this->generateUrl('task_create'),
-            $task !== null => $this->generateUrl('task_update', ['task' => $task->getUuId()])
+            $task !== null => $this->generateUrl('task_edit', ['task' => $task->getUuId()])
         });
 
         $deleteForms = $this->createTaskDeleteForms($tasks);
@@ -73,7 +75,7 @@ class TaskController extends AbstractController
             return $this->redirectToRoute('task_overview');
         }
 
-        $tasks = $this->taskProvider->getAllTask();
+        $tasks = $this->taskProvider->getTaskByUser($this->userContext->getUser());
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
         return $this->render('Task/overview.html.twig', [
@@ -83,10 +85,10 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/task/update/{task}', 'task_update', requirements: ['task' => '.{36}'], methods: ['post'])]
-    public function update(Request $request, Task $task): Response
+    #[Route('/task/edit/{task}', 'task_edit', requirements: ['task' => '.{36}'], methods: ['post'])]
+    public function edit(Request $request, Task $task): Response
     {
-        $form = $this->createTaskForm($task, $this->generateUrl('task_update', ['task' => $task->getUuid()]));
+        $form = $this->createTaskForm($task, $this->generateUrl('task_edit', ['task' => $task->getUuid()]));
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid())
@@ -105,10 +107,10 @@ class TaskController extends AbstractController
 
             $this->taskHandler->update($task, $name, $description, $duration, $category, $participants, $recurrenceStartsAt, $recurrenceEndsAt, $recurrenceType, $recurrenceParameters);
 
-            return $this->redirectToRoute('task_overview');
+            return $this->redirectToRoute('task_overview', ['task' => $task->getUuid()]);
         }
 
-        $tasks = $this->taskProvider->getAllTask();
+        $tasks = $this->taskProvider->getTaskByUser($this->userContext->getUser());
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
         return $this->render('Task/overview.html.twig', [

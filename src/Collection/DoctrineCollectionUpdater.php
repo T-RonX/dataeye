@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Collection;
 
+use App\DateTimeProvider\DateTimeProvider;
+use App\Task\Entity\TaskParticipant;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class DoctrineCollectionUpdater
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private DateTimeProvider $dateTimeProvider,
     ) {
     }
 
@@ -89,6 +92,7 @@ readonly class DoctrineCollectionUpdater
     {
         $removedItems = [];
 
+        /** @var TaskParticipant[] $collectionItems */
         $collectionItems = $collection->filter(static function (object $collectionItem) use ($entity, $targetEntityCallback): bool {
             return spl_object_id($targetEntityCallback($collectionItem)) === spl_object_id($entity);
         })->toArray();
@@ -98,7 +102,8 @@ readonly class DoctrineCollectionUpdater
             if ($collectionItem !== null)
             {
                 $collection->removeElement($collectionItem);
-                //$this->entityManager->remove($collectionItem);
+                $collectionItem->setDeletedAt($this->dateTimeProvider->getNow());
+                $this->entityManager->persist($collectionItem);
             }
 
             $removedItems[] = $collectionItem;

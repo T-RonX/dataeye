@@ -23,6 +23,7 @@ class TaskParticipantRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->where('p.task = :task')
+            ->andWhere('p.deletedAt IS NULL')
             ->setParameter('task', $task)
             ->getQuery()
             ->getResult();

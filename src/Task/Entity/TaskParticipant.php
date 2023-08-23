@@ -6,6 +6,7 @@ namespace App\Task\Entity;
 
 use App\User\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
+use DateTimeInterface;
 
 #[ORM\Entity]
 class TaskParticipant
@@ -22,6 +23,9 @@ class TaskParticipant
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: "user", referencedColumnName: "id", nullable: false)]
     private User $user;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private DateTimeInterface $deletedAt;
     
     public function getId(): ?int
     {
@@ -55,6 +59,18 @@ class TaskParticipant
     public function setUser(User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }

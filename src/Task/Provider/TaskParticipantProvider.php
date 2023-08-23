@@ -8,6 +8,7 @@ use App\Task\Entity\Task;
 use App\Task\Entity\TaskParticipant;
 use App\Task\Repository\TaskParticipantRepository;
 use App\User\Entity\User;
+use Doctrine\Common\Collections\ArrayCollection;
 
 readonly class TaskParticipantProvider
 {
@@ -17,7 +18,7 @@ readonly class TaskParticipantProvider
     }
 
     /**
-     * @return array<User>
+     * @return User[]
      */
     public function getTaskParticipantUsers(Task $task): array
     {
@@ -25,10 +26,18 @@ readonly class TaskParticipantProvider
     }
 
     /**
-     * @return array<TaskParticipant>
+     * @return TaskParticipant[]
      */
     public function getTaskParticipants(Task $task): array
     {
         return $this->repository->getByTask($task);
+    }
+
+    /**
+     * @return ArrayCollection<int, TaskParticipant>
+     */
+    public function getTaskParticipantsCollection(Task $task): ArrayCollection
+    {
+        return new ArrayCollection($this->getTaskParticipants($task));
     }
 }

@@ -6,7 +6,7 @@ namespace App\DataFixtures;
 
 use App\Locale\Entity\Timezone;
 use App\User\Entity\User;
-use App\UserPreferences\Entity\UserPreferenceTimezone;
+use App\UserPreference\Entity\UserPreferenceTimezone;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
