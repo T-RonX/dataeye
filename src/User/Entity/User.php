@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Entity;
 
 use App\User\Repository\UserRepository;
+use App\UserPreference\Entity\UserPreference;
 use App\Uuid\Entity\EntityUuidInterface;
 use App\Uuid\Entity\EntityUuidTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,10 +45,17 @@ class User implements EntityUuidInterface, UserInterface, PasswordAuthenticatedU
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'associatedTo')]
     private Collection $associatedWith;
 
+    /**
+     * @var Collection<int, UserPreference>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserPreference::class)]
+    private Collection $preferences;
+
     public function __construct()
     {
         $this->associatedTo = new ArrayCollection();
         $this->associatedWith = new ArrayCollection();
+        $this->preferences = new ArrayCollection();
     }
 
     public function setId(?int $id): self
@@ -121,6 +129,18 @@ class User implements EntityUuidInterface, UserInterface, PasswordAuthenticatedU
     public function setAssociatedWith(Collection $associatedWith): self
     {
         $this->associatedWith = $associatedWith;
+
+        return $this;
+    }
+
+    public function getPreferences(): Collection
+    {
+        return $this->preferences;
+    }
+
+    public function setPreferences(Collection $preferences): self
+    {
+        $this->preferences = $preferences;
 
         return $this;
     }

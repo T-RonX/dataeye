@@ -217,7 +217,8 @@
     </head>
     <body>
     <div style="font-family: Garamond serif,serif; height: 60px; width: 100%; background-color: #4D8734; padding: 10px; color: #fff;">
-        <a href="{{ path('task_overview') }}">home</a><br/>
+        <a href="{{ path('task_overview') }}">home</a>
+        <a href="{{ path('user_preferences') }}">preferences</a><br/>
     </div>
     {% if is_granted('IS_AUTHENTICATED') %}
         <div style="padding: 12px; text-align: right; float: right"><a href="{{ path('user_logout') }}">logout</a></div>

@@ -24,7 +24,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class Load020_Task extends Fixture
+class Load030_Task extends Fixture
 {
     private EntityManagerInterface $entityManager;
 

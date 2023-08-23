@@ -26,6 +26,10 @@ doctrine:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/User/Entity'
                 prefix: 'App\User\Entity'
+            App\UserPreference:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/UserPreference/Entity'
+                prefix: 'App\UserPreference\Entity'
             App\Task:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Task/Entity'
@@ -34,6 +38,10 @@ doctrine:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/AuditLog/Entity'
                 prefix: 'App\AuditLog\Entity'
+            App\Locale:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Locale/Entity'
+                prefix: 'App\Locale\Entity'
 
 when@test:
     doctrine:
