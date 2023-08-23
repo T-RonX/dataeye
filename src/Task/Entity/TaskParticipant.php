@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Task\Entity;
 
+use App\Doctrine\SoftDeletable\SoftDeletable;
+use App\Doctrine\SoftDeletable\SoftDeletableInterface;
 use App\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
 use DateTimeInterface;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-class TaskParticipant
+class TaskParticipant implements SoftDeletableInterface
 {
+    use SoftDeletable;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -24,9 +28,6 @@ class TaskParticipant
     #[ORM\JoinColumn(name: "user", referencedColumnName: "id", nullable: false)]
     private User $user;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    private DateTimeInterface $deletedAt;
-    
     public function getId(): ?int
     {
         return $this->id;
@@ -59,18 +60,6 @@ class TaskParticipant
     public function setUser(User $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getDeletedAt(): DateTimeInterface
-    {
-        return $this->deletedAt;
-    }
-
-    public function setDeletedAt(DateTimeInterface $deletedAt): self
-    {
-        $this->deletedAt = $deletedAt;
 
         return $this;
     }
