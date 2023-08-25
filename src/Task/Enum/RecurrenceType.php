@@ -10,4 +10,9 @@ enum RecurrenceType: int
     case Week = 2;
     case Month = 3;
     case Year = 4;
+
+    public function toString(): string
+    {
+        return (string) $this->value;
+    }
 }

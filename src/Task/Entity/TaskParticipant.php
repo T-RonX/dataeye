@@ -7,7 +7,6 @@ namespace App\Task\Entity;
 use App\Doctrine\SoftDeletable\SoftDeletable;
 use App\Doctrine\SoftDeletable\SoftDeletableInterface;
 use App\User\Entity\User;
-use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]

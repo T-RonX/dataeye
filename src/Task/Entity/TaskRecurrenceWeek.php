@@ -45,7 +45,7 @@ class TaskRecurrenceWeek extends TaskRecurrence implements RecurrenceIntervalInt
      */
     public function getDays(): array
     {
-        return array_map(static fn(int $day) => Day::from($day), explode(',', $this->days));
+        return $this->days ? array_map(static fn(int $day) => Day::from($day), explode(',', $this->days)) : [];
     }
 
     public function getRecurrenceType(): RecurrenceType

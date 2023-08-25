@@ -12,8 +12,9 @@ use App\Task\Enum\RecurrenceField;
 use App\Task\Enum\RecurrenceMode;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskProvider;
-use App\Task\Provider\TaskRecurrenceProvider;
+use App\Task\Recurrence\RecurrenceCalculator;
 use App\Task\TaskHandler;
+use App\UserPreference\Provider\UserPreferenceProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
@@ -28,7 +29,8 @@ class TaskController extends AbstractController
         private readonly TaskProvider $taskProvider,
         private readonly TaskHandler $taskHandler,
         private readonly UserContext $userContext,
-        private readonly TaskRecurrenceProvider $recurrenceProvider,
+        private readonly RecurrenceCalculator $recurrenceCalculator,
+        private readonly UserPreferenceProvider $preferenceProvider,
     ) {
     }
 
@@ -43,10 +45,13 @@ class TaskController extends AbstractController
 
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
+        $recurrences = $task ? $this->recurrenceCalculator->getRecurrence($task, $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone()) : [];
+
         return $this->render('Task/overview.html.twig', [
             'task_form' => $form,
             'task_delete_forms' => $deleteForms,
             'tasks' => $tasks,
+            'recurrences' => $recurrences,
         ]);
     }
 
