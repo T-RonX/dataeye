@@ -23,7 +23,7 @@ readonly class TaskCreator
     }
 
     /**
-     * @param array<User> $participatingUsers
+     * @param User[] $participatingUsers
      */
     public function create(User $owner, string $name, string $description, int $duration, ?TaskCategory $category, array $participatingUsers, DateTimeInterface $startsAt, ?DateTimeInterface $recurrenceEndsAt, ?RecurrenceType $recurrence, array $recurrenceParams = []): Task
     {
@@ -49,11 +49,6 @@ readonly class TaskCreator
         $this->entityManager->persist($task);
 
         return $task;
-    }
-
-    private function updateRecurrence(DateTimeInterface $startsAt, ?DateTimeInterface $endsAt, ?RecurrenceType $recurrence, array $params): void
-    {
-
     }
 
     private function createParticipants(Task $task, array $users): void

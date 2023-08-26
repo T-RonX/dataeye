@@ -10,6 +10,7 @@ use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskRecurrenceProvider;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use DateTimeInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\TaggedLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -22,6 +23,9 @@ readonly class RecurrenceCalculator
     ) {
     }
 
+    /**
+     * @return DateTimeInterface[]
+     */
     public function getRecurrence(Task $task, Timezone $timezone): array
     {
         $recurrence = $this->recurrenceProvider->getCurrentTaskRecurrence($task);

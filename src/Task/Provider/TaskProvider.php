@@ -37,7 +37,7 @@ readonly class TaskProvider
     /**
      * @return Task[]
      */
-    public function getTaskByUser(User $user): array
+    public function getTasksByUser(User $user): array
     {
         return $this->repository->getByUser($user);
     }

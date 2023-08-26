@@ -2,14 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Task;
+namespace App\Task\Facade\Trait;
 
-use App\Context\UserContext;
 use App\DateTimeProvider\DateTimeProvider;
-use App\Facade\FacadeInterface;
-use App\Task\Creator\TaskCreator;
-use App\Task\Deleter\TaskDeleter;
-use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Entity\TaskParticipant;
 use App\Task\Enum\Day;
@@ -20,61 +15,16 @@ use App\Task\Enum\RecurrenceMode;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Enum\WeekOrdinal;
 use App\Task\Provider\TaskCategoryProvider;
-use App\Task\Provider\TaskProvider;
-use App\Task\Updater\TaskUpdater;
 use App\User\Entity\User;
 use App\User\Provider\UserProvider;
 use DateTimeInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Contracts\Service\Attribute\Required;
 
-#[AsTaggedItem('task')]
-readonly class TaskHandler implements FacadeInterface
+trait ArgumentResolverTrait
 {
-    public function __construct(
-        private UserContext $userContext,
-        private TaskProvider $taskProvider,
-        private UserProvider $userProvider,
-        private TaskCreator $creator,
-        private TaskUpdater $updater,
-        private TaskDeleter $deleter,
-        private TaskCategoryProvider $taskCategoryProvider,
-        private EntityManagerInterface $entityManager,
-        private DateTimeProvider $dateTimeProvider,
-    ) {
-    }
-    public function create(string $name, string $description, int $duration, TaskCategory|int|null $category, array|string $participatingUsers, DateTimeInterface|string $startsAt, DateTimeInterface|string|null $recurrenceEndsAt, RecurrenceType|int|null $taskRecurrence, array|null $recurrenceParams): Task
-    {
-        return $this->entityManager->wrapInTransaction(function() use($name, $description, $duration, $category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams): Task
-        {
-            $owner = $this->userContext->getUser();
-
-            [$category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams]
-                = $this->resolveCommonValues($category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams);
-
-            return $this->creator->create($owner, $name, $description, $duration, $category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams);
-        });
-    }
-
-    public function update(Task|int $task, string $name, string $description, int $duration, TaskCategory|int|null $category, array|string $participatingUsers, DateTimeInterface|string $startsAt, DateTimeInterface|string|null $recurrenceEndsAt, RecurrenceType|int|null $taskRecurrence, array|null $recurrenceParams): Task
-    {
-        return $this->entityManager->wrapInTransaction(function() use($task, $name, $description, $duration, $category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams): Task {
-            $task = $this->taskProvider->resolveTask($task);
-
-            [$category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams]
-                = $this->resolveCommonValues($category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams);
-
-            return $this->updater->update($task, $name, $description, $duration, $category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams);
-        });
-    }
-
-    public function delete(Task|int $task): void
-    {
-        $this->entityManager->wrapInTransaction(function() use($task): void {
-            $task = $this->taskProvider->resolveTask($task);
-            $this->deleter->delete($task);
-        });
-    }
+    private DateTimeProvider $dateTimeProvider;
+    private UserProvider $userProvider;
+    private TaskCategoryProvider $taskCategoryProvider;
 
     /**
      * @return array{TaskCategory|null, TaskParticipant[], DateTimeInterface, DateTimeInterface|null, RecurrenceType|null, mixed[}
@@ -135,7 +85,7 @@ readonly class TaskHandler implements FacadeInterface
                     RecurrenceField::MonthRelativeWeekOrdinal->value => $this->resolveWeekOrdinal($params[RecurrenceField::MonthRelativeWeekOrdinal->value]),
                     RecurrenceField::MonthRelativeDay->value => $params[RecurrenceField::MonthRelativeDay->value],
                 ],
-        }];
+            }];
     }
 
     private function resolveTaskRecurrenceYearParams(array $params): array
@@ -151,7 +101,7 @@ readonly class TaskHandler implements FacadeInterface
                     RecurrenceField::YearRelativeDayOrdinal->value => $this->resolveDayOrdinal($params[RecurrenceField::YearRelativeDayOrdinal->value]),
                     RecurrenceField::YearRelativeDay->value => $this->resolveDay($params[RecurrenceField::YearRelativeDay->value]),
                 ],
-        }];
+            }];
     }
 
     private function resolveMode(RecurrenceMode|int $mode): RecurrenceMode
@@ -199,5 +149,17 @@ readonly class TaskHandler implements FacadeInterface
     private function resolveCategory(TaskCategory|int|null $category): ?TaskCategory
     {
         return $category === null ? null :$this->taskCategoryProvider->resolveTaskCategory($category);
+    }
+
+    #[Required]
+    public function setDependencies(
+        DateTimeProvider $dateTimeProvider,
+        UserProvider $userProvider,
+        TaskCategoryProvider $taskCategoryProvider,
+    ): void
+    {
+        $this->dateTimeProvider = $dateTimeProvider;
+        $this->userProvider = $userProvider;
+        $this->taskCategoryProvider = $taskCategoryProvider;
     }
 }

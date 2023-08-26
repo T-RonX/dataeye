@@ -18,7 +18,7 @@ readonly class UserContext
     {
         return $this->security->getUser() !== null;
     }
-    
+
     public function getUser(): User
     {
         /** @var User $user */
