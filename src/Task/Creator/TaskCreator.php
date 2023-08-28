@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Task\Creator;
 
+use App\Locale\Entity\Timezone;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Enum\RecurrenceType;
@@ -25,11 +26,11 @@ readonly class TaskCreator
     /**
      * @param User[] $participatingUsers
      */
-    public function create(User $owner, string $name, string $description, int $duration, ?TaskCategory $category, array $participatingUsers, DateTimeInterface $startsAt, ?DateTimeInterface $recurrenceEndsAt, ?RecurrenceType $recurrence, array $recurrenceParams = []): Task
+    public function create(User $owner, string $name, string $description, int $duration, ?TaskCategory $category, array $participatingUsers, DateTimeInterface $dateTime, Timezone $timezone, DateTimeInterface $recurrenceStartDate, ?DateTimeInterface $recurrenceEndDate, ?RecurrenceType $recurrence, array $recurrenceParams = []): Task
     {
-        $task = $this->createTask($owner, $name, $description, $duration, $category);
+        $task = $this->createTask($owner, $name, $dateTime, $timezone, $description, $duration, $category);
 
-        $this->recurrence->setForTask($task, $startsAt, $recurrenceEndsAt, $recurrence, $recurrenceParams);
+        $this->recurrence->setForTask($task, $recurrenceStartDate, $recurrenceEndDate, $recurrence, $recurrenceParams);
         $this->createParticipants($task, $participatingUsers);
 
         $this->entityManager->flush();
@@ -37,11 +38,13 @@ readonly class TaskCreator
         return $task;
     }
 
-    private function createTask(User $owner, string $name, string $description, int $duration, ?TaskCategory $category): Task
+    private function createTask(User $owner, string $name, DateTimeInterface $dateTime, Timezone $timezone, string $description, int $duration, ?TaskCategory $category): Task
     {
         $task = $this->factory->createTask()
             ->setOwnedBy($owner)
             ->setName($name)
+            ->setDateTime($dateTime)
+            ->setTimezone($timezone)
             ->setDescription($description)
             ->setDuration($duration)
             ->setCategory($category);

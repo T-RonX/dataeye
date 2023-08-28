@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
+use App\Locale\Entity\Timezone;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Entity\TaskCompletion;
@@ -42,21 +43,27 @@ class Load030_Task extends Fixture
             ->setDescription('Some description')
             ->setOwnedBy($user_1)
             ->setCategory($this->getReference('user_1_category_1', TaskCategory::class))
-            ->setDuration(60);
+            ->setDuration(60)
+            ->setDateTime(new DateTimeImmutable('2023-8-5 23:30:48'))
+            ->setTimezone($this->getReference('timezone_Europe/Amsterdam', Timezone::class));
 
         $task_2 = (new Task())
             ->setName('Task 2')
             ->setDescription('Some description')
             ->setOwnedBy($user_1)
             ->setCategory($this->getReference('user_1_category_2', TaskCategory::class))
-            ->setDuration(60);
+            ->setDuration(60)
+            ->setDateTime(new DateTimeImmutable('2000-1-1 14:00:10'))
+            ->setTimezone($this->getReference('timezone_Europe/Amsterdam', Timezone::class));
 
         $task_3 = (new Task())
             ->setName('Task 3')
             ->setDescription('Some description')
             ->setOwnedBy($user_2)
             ->setCategory($this->getReference('user_2_category_1', TaskCategory::class))
-            ->setDuration(60);
+            ->setDuration(60)
+            ->setDateTime(new DateTimeImmutable('2023-1-1 16:00:59'))
+            ->setTimezone($this->getReference('timezone_Europe/Amsterdam', Timezone::class));
 
         $this->addReference('user_1_task_1', $task_1);
         $this->addReference('user_1_task_2', $task_2);
@@ -139,30 +146,30 @@ class Load030_Task extends Fixture
     {
         $recurrence_1 = (new TaskRecurrenceYearRelative())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setStartsAt(new DateTimeImmutable('2023-8-5 12:50:33'))
-            ->setEndsAt(new DateTimeImmutable('2023-12-31 23:59:59'))
+            ->setStartDate(new DateTimeImmutable('2023-8-5 12:50:33'))
+            ->setEndDate(new DateTimeImmutable('2023-12-31 23:59:59'))
             ->setDay(Day::Tuesday)
             ->setMonth(Month::February)
             ->setDayOrdinal(DayOrdinal::Second);
 
         $recurrence_2 = (new TaskRecurrenceMonthRelative())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setStartsAt(new DateTimeImmutable('2024-1-1 00:00:00'))
-            ->setEndsAt(null)
+            ->setStartDate(new DateTimeImmutable('2025-1-1 00:00:00'))
+            ->setEndDate(null)
             ->setInterval(14)
             ->setWeekOrdinal(WeekOrdinal::Last)
             ->setDay(Day::Friday);
 
         $recurrence_3 = (new TaskRecurrenceDay())
             ->setTask($this->getReference('user_1_task_2', Task::class))
-            ->setStartsAt(new DateTimeImmutable('2000-1-1 00:00:00'))
-            ->setEndsAt(new DateTimeImmutable('2050-1-1 23:59:59'))
+            ->setStartDate(new DateTimeImmutable('2000-1-1 00:00:00'))
+            ->setEndDate(new DateTimeImmutable('2050-1-1 23:59:59'))
             ->setInterval(20);
 
         $recurrence_4 = (new TaskRecurrenceWeek())
             ->setTask($this->getReference('user_2_task_1', Task::class))
-            ->setStartsAt(new DateTimeImmutable('2023-1-1 00:00:00'))
-            ->setEndsAt(null)
+            ->setStartDate(new DateTimeImmutable('2023-1-1 00:00:00'))
+            ->setEndDate(null)
             ->setInterval(2)
             ->setDays([Day::Saturday, Day::Sunday]);
 

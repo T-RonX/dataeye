@@ -15,7 +15,6 @@ use App\Task\Facade\TaskCreatorFacade;
 use App\Task\Facade\TaskDeleterFacade;
 use App\Task\Facade\TaskProviderFacade;
 use App\Task\Facade\TaskUpdaterFacade;
-use App\Task\Recurrence\RecurrenceCalculator;
 use App\UserPreference\Provider\UserPreferenceProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Form;
@@ -29,7 +28,6 @@ class TaskController extends AbstractController
 {
     public function __construct(
         private readonly UserContext $userContext,
-        private readonly RecurrenceCalculator $recurrenceCalculator,
         private readonly UserPreferenceProvider $preferenceProvider,
     ) {
     }
@@ -45,7 +43,7 @@ class TaskController extends AbstractController
 
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
-        $recurrences = $task ? $this->recurrenceCalculator->getRecurrence($task, $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone()) : [];
+        $recurrences = $task ? $provider->getRecurrence($task, $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone()) : [];
 
         return $this->render('Task/overview.html.twig', [
             'task_form' => $form,
@@ -68,14 +66,14 @@ class TaskController extends AbstractController
             $duration = (int) $form['duration']->getData();
             $category = $form['category']->getData();
             $participants = iterator_to_array($form['participants']->getData());
-            $recurrenceStartsAt = $form['starts_at']->getData();
-            $recurrenceEndsAt = $form['ends_at']->getData();
-            $recurrenceForm = $form['recurrence'];
+            $dateTime = $form['datetime']->getData();
             $hasRecurrence = $form['has_recurrence']->getData();
+            $recurrenceForm = $form['recurrence'];
+            $recurrenceEndDate = $hasRecurrence ? $recurrenceForm['end_date']->getData() : null;
             $recurrenceType = $hasRecurrence ? $recurrenceForm['type']->getData() : null;
             $recurrenceParameters = $hasRecurrence ? $this->getRecurrenceFieldData($recurrenceForm) : [];
 
-            $creator->create($name, $description, $duration, $category, $participants, $recurrenceStartsAt, $recurrenceEndsAt, $recurrenceType, $recurrenceParameters);
+            $creator->create($name, $description, $duration, $category, $participants, $dateTime, $recurrenceEndDate, $recurrenceType, $recurrenceParameters);
 
             return $this->redirectToRoute('task_overview');
         }
@@ -103,15 +101,15 @@ class TaskController extends AbstractController
             $description = $form['description']->getData();
             $duration = (int) $form['duration']->getData();
             $category = $form['category']->getData();
-            $recurrenceStartsAt = $form['starts_at']->getData();
-            $recurrenceEndsAt = $form['ends_at']->getData();
+            $dateTime = $form['datetime']->getData();
             $participants = iterator_to_array($form['participants']->getData());
-            $recurrenceForm = $form['recurrence'];
             $hasRecurrence = $form['has_recurrence']->getData();
+            $recurrenceForm = $form['recurrence'];
+            $recurrenceEndDate = $hasRecurrence ? $recurrenceForm['end_date']->getData() : null;
             $recurrenceType = $hasRecurrence ? $recurrenceForm['type']->getData() : null;
             $recurrenceParameters = $hasRecurrence ? $this->getRecurrenceFieldData($recurrenceForm) : [];
 
-            $updater->update($task, $name, $description, $duration, $category, $participants, $recurrenceStartsAt, $recurrenceEndsAt, $recurrenceType, $recurrenceParameters);
+            $updater->update($task, $name, $description, $duration, $category, $participants, $dateTime, $recurrenceEndDate, $recurrenceType, $recurrenceParameters);
 
             return $this->redirectToRoute('task_overview', ['task' => $task->getUuid()]);
         }

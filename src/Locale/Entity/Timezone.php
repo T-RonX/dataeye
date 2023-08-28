@@ -20,38 +20,11 @@ class Timezone implements EntityUuidInterface
     #[ORM\Column]
     private ?int $id;
 
-    #[ORM\Column(type: 'smallint')]
-    private int $offsetHours;
-
-    #[ORM\Column(type: 'smallint')]
-    private int $offsetMinutes;
-
     #[ORM\Column]
     private string $name;
 
-    public function getOffsetHours(): int
-    {
-        return $this->offsetHours;
-    }
-
-    public function setOffsetHours(int $offsetHours): self
-    {
-        $this->offsetHours = $offsetHours;
-
-        return $this;
-    }
-
-    public function getOffsetMinutes(): int
-    {
-        return $this->offsetMinutes;
-    }
-
-    public function setOffsetMinutes(int $offsetMinutes): self
-    {
-        $this->offsetMinutes = $offsetMinutes;
-
-        return $this;
-    }
+    #[ORM\Column]
+    private string $version;
 
     public function getName(): string
     {
@@ -61,6 +34,18 @@ class Timezone implements EntityUuidInterface
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
+
+    public function setVersion(string $version): self
+    {
+        $this->version = $version;
 
         return $this;
     }

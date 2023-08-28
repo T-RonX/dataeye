@@ -35,9 +35,9 @@ readonly class RecurrenceCalculator
             return [];
         }
 
-        $startsAt = $recurrence->getStartsAt();
+        $startsAt = $recurrence->getStartDate();
         $startDate = $startsAt instanceof CarbonInterface ? $startsAt : CarbonImmutable::createFromInterface($startsAt);
-        $endsDate = $startsAt->clone()->addYear();
+        $endsDate = $startDate->clone()->addYear();
 
         return $this->getTypeHandler($recurrence->getRecurrenceType())
             ->getRecurringDates($startDate, $endsDate, $recurrence);

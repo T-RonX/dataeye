@@ -9,6 +9,7 @@ use Carbon\CarbonImmutable;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 
 class DateTimeProvider
 {
@@ -22,9 +23,9 @@ class DateTimeProvider
         return Carbon::now();
     }
 
-    public function create(string $format): DateTimeImmutable
+    public function create(string $format, ?DateTimeZone $timezone = null): DateTimeImmutable
     {
-        return CarbonImmutable::parse($format);
+        return CarbonImmutable::parse($format, $timezone);
     }
 
     public function createMutable(string $format): DateTime
@@ -46,5 +47,17 @@ class DateTimeProvider
             is_string($dateTime) => $this->create($dateTime),
             default => $dateTime
         };
+    }
+
+    public function asDateImmutableUTC(DateTimeInterface $utcDateTime, DateTimeZone $localTimezone): DateTimeImmutable
+    {
+        $dateTimeLocal = DateTime::createFromInterface($utcDateTime)->setTimezone($localTimezone);
+
+        return $this->create($dateTimeLocal->format('Y-m-d'), $this->createTimezoneUTC());
+    }
+
+    private function createTimezoneUTC(): DateTimeZone
+    {
+        return new DateTimeZone('UTC');
     }
 }

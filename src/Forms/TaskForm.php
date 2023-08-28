@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Forms;
 
+use App\Context\UserContext;
 use App\DateTimeProvider\DateTimeProvider;
 use App\Forms\Exception\MissingFormOptionException;
 use App\Task\Entity\Task;
@@ -17,7 +18,6 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -32,6 +32,7 @@ class TaskForm extends AbstractType
         private readonly TaskRecurrenceProvider $taskRecurrenceProvider,
         private readonly TaskParticipantProvider $taskParticipantProvider,
         private readonly DateTimeProvider $dateTimeProvider,
+        private readonly UserContext $userContext,
     ) {
     }
 
@@ -53,11 +54,14 @@ class TaskForm extends AbstractType
                 'choices' => $this->taskCategoryProvider->getByOwner($user),
                 'required' => false,
             ])
-            ->add('starts_at', DateTimeType::class, [
+            ->add('datetime', DateTimeType::class, [
+                'input' => 'datetime_immutable',
                 'mapped' => false,
                 'widget' => 'single_text',
-                'data' => $recurrence?->getStartsAt() ?: $this->dateTimeProvider->getNow(),
+                'data' => $task?->getDateTime() ?: $this->dateTimeProvider->getNow(),
                 'required' => false,
+                'view_timezone' => $task?->getTimezone()->getName() ?: $this->userContext->getTimezone()->getName(),
+                'model_timezone' => 'UTC',
             ])
             ->add('has_recurrence', CheckboxType::class, [
                 'label' => 'Repeat every...',
@@ -70,12 +74,6 @@ class TaskForm extends AbstractType
                 'label' => false,
                 'task' => $task,
                 'recurrence' => $recurrence,
-            ])
-            ->add('ends_at', DateType::class, [
-                'mapped' => false,
-                'widget' => 'single_text',
-                'data' => $recurrence?->getEndsAt(),
-                'required' => false,
             ])
             ->add('participants', EntityType::class, [
                 'class' => User::class,

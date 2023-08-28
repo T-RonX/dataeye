@@ -6,8 +6,9 @@ namespace App\Task\Recurrence;
 
 use App\DateTimeProvider\DateTimeProvider;
 use App\Task\Entity\Task;
-use App\Task\Enum\RecurrenceType as RecurrenceType;
+use App\Task\Enum\RecurrenceType;
 use App\Task\Repository\TaskRecurrenceRepository;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -21,7 +22,7 @@ readonly class Recurrence
     ) {
     }
 
-    public function setForTask(Task $task, DateTimeInterface $startsAt, ?DateTimeInterface $endsAt, ?RecurrenceType $recurrence, array $params = []): void
+    public function setForTask(Task $task, ?DateTimeInterface $startDate, ?DateTimeInterface $endDate, ?RecurrenceType $recurrence, array $params = []): void
     {
         $isNewTask = $this->entityManager->getUnitOfWork()->isScheduledForInsert($task);
 
@@ -38,15 +39,23 @@ readonly class Recurrence
 
         if ($recurrence !== null)
         {
+            $startDate = $startDate ? $this->makeDatetimeImmutable($startDate) : null;
+            $endDate = $endDate ? $this->makeDatetimeImmutable($endDate) : null;
+
             $newRecurrence = ($this->creator->create($recurrence, $params))
                 ->setTask($task)
-                ->setStartsAt($startsAt)
-                ->setEndsAt($endsAt);
+                ->setStartDate($startDate)
+                ->setEndDate($endDate);
 
             $task->getRecurrences()->add($newRecurrence);
             $this->entityManager->persist($newRecurrence);
         }
 
         $this->entityManager->flush();
+    }
+
+    private function makeDatetimeImmutable(DateTimeInterface $dateTime): DateTimeImmutable
+    {
+       return $dateTime instanceof DateTimeImmutable ? $dateTime : DateTimeImmutable::createFromInterface($dateTime);
     }
 }

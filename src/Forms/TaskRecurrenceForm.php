@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Forms;
 
+use App\Context\UserContext;
 use App\Task\Contract\RecurrenceIntervalInterface;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskRecurrence;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskRecurrenceProvider;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -19,6 +21,7 @@ class TaskRecurrenceForm extends AbstractType
 {
     public function __construct(
         private readonly TaskRecurrenceProvider $taskRecurrenceProvider,
+        private readonly UserContext $userContext,
     ) {
     }
 
@@ -56,7 +59,7 @@ class TaskRecurrenceForm extends AbstractType
                 'task' => $task,
                 'recurrence' => $recurrence,
                 'attr' => [
-                    'class' => 'subform recurrence_month'
+                    'class' => 'subform recurrence_month',
                 ]
             ])
             ->add('type_year', TaskRecurrenceYearForm::class, [
@@ -65,8 +68,15 @@ class TaskRecurrenceForm extends AbstractType
                 'task' => $task,
                 'recurrence' => $recurrence,
                 'attr' => [
-                    'class' => 'subform recurrence_year'
+                    'class' => 'subform recurrence_year',
                 ]
+            ])
+            ->add('end_date', DateType::class, [
+                'input' => 'datetime_immutable',
+                'mapped' => false,
+                'widget' => 'single_text',
+                'data' => $recurrence?->getEndDate(),
+                'required' => false,
             ]);
     }
 

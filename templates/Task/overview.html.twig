@@ -27,10 +27,9 @@
 	{{ form_row(task_form.description) }}
 	{{ form_row(task_form.duration) }}
 	{{ form_row(task_form.category) }}
-	{{ form_row(task_form.starts_at) }}
+	{{ form_row(task_form.datetime) }}
 	{{ form_row(task_form.has_recurrence) }}
 	{{ form_row(task_form.recurrence) }}
-	{{ form_row(task_form.ends_at) }}
 	{{ form_row(task_form.participants) }}
 	{{ form_row(task_form._token) }}
 	{{ form_row(task_form.save) }}
@@ -45,6 +44,7 @@
 {% endblock %}
 
 {% block javascripts %}
+	{{ parent() }}
 <script>
 $(function() {
     $('input[name="task_form[has_recurrence]"]').on('change', function () {
@@ -129,4 +129,9 @@ $(function() {
 {% block _task_form_has_recurrence_row %}
 	{{ form_widget(form) }}
 	{{ form_label(form) }}
+{% endblock %}
+
+{% block _task_form_recurrence_end_date_row %}
+	<br/>
+	{{ form_label(form) }}{{ form_widget(form) }}
 {% endblock %}

@@ -32,21 +32,12 @@ class UserPreferencesForm extends AbstractType
             ->add('timezone', EntityType::class, [
                 'class' => Timezone::class,
                 'data' => $timezonePreference->getTimezone(),
-                'choice_label' => fn(Timezone $timezone) => $this->formatTimezone($timezone),
+                'choice_label' => fn(Timezone $timezone) => $timezone->getName(),
             ])
 
             ->add('submit', SubmitType::class, [
                 'label' => 'Save',
             ]);
-    }
-
-    private function formatTimezone(Timezone $timezone): string
-    {
-        $name = $timezone->getName();
-        $hours = $timezone->getOffsetHours();
-        $minutes = $timezone->getOffsetMinutes();
-
-        return sprintf('(GMT%s:%s) %s', sprintf('%s%02d', $hours >= 0 ? ($hours > 0 ? '+' : ' ') : '-', abs($hours)), sprintf('%02d', $minutes), $name);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

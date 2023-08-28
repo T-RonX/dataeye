@@ -30,11 +30,11 @@ abstract class TaskRecurrence
     #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id', nullable: false)]
     private Task $task;
 
-    #[ORM\Column(name: 'starts_at', type: 'datetime_immutable')]
-    private DateTimeInterface $startsAt;
+    #[ORM\Column(name: 'start_date', type: 'date_immutable')]
+    private DateTimeInterface $startDate;
 
-    #[ORM\Column(name: 'ends_at', type: 'datetime_immutable' , nullable: true)]
-    private ?DateTimeInterface $endsAt;
+    #[ORM\Column(name: 'end_date', type: 'date_immutable' , nullable: true)]
+    private ?DateTimeInterface $endDate;
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable' , nullable: true)]
     private ?DateTimeInterface $deletedAt;
@@ -63,26 +63,26 @@ abstract class TaskRecurrence
         return $this;
     }
 
-    public function getStartsAt(): DateTimeInterface
+    public function getStartDate(): DateTimeInterface
     {
-        return $this->startsAt;
+        return $this->startDate;
     }
 
-    public function setStartsAt(DateTimeInterface $startsAt): self
+    public function setStartDate(DateTimeInterface $startDate): self
     {
-        $this->startsAt = $startsAt;
+        $this->startDate = $startDate;
 
         return $this;
     }
 
-    public function getEndsAt(): ?DateTimeInterface
+    public function getEndDate(): ?DateTimeInterface
     {
-        return $this->endsAt;
+        return $this->endDate;
     }
 
-    public function setEndsAt(?DateTimeInterface $endsAt): self
+    public function setEndDate(?DateTimeInterface $endDate): self
     {
-        $this->endsAt = $endsAt;
+        $this->endDate = $endDate;
 
         return $this;
     }

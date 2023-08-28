@@ -9,6 +9,7 @@ use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Facade\Trait\ArgumentResolverTrait;
+use App\Task\Facade\Trait\UserTimezoneTrait;
 use App\Task\Provider\TaskProvider;
 use App\Task\Updater\TaskUpdater;
 use DateTimeInterface;
@@ -19,6 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 class TaskUpdaterFacade implements FacadeInterface
 {
     use ArgumentResolverTrait;
+    use UserTimezoneTrait;
 
     public function __construct(
         readonly private TaskProvider $taskProvider,
@@ -27,15 +29,17 @@ class TaskUpdaterFacade implements FacadeInterface
     ) {
     }
 
-    public function update(Task|int $task, string $name, string $description, int $duration, TaskCategory|int|null $category, array|string $participatingUsers, DateTimeInterface|string $startsAt, DateTimeInterface|string|null $recurrenceEndsAt, RecurrenceType|int|null $taskRecurrence, array|null $recurrenceParams): Task
+    public function update(Task|int $task, string $name, string $description, int $duration, TaskCategory|int|null $category, array|string $participatingUsers, DateTimeInterface|string $dateTime, DateTimeInterface|string|null $recurrenceEndDate, RecurrenceType|int|null $taskRecurrence, array|null $recurrenceParams): Task
     {
-        return $this->entityManager->wrapInTransaction(function() use($task, $name, $description, $duration, $category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams): Task {
+        return $this->entityManager->wrapInTransaction(function() use($task, $name, $description, $duration, $category, $participatingUsers, $dateTime, $recurrenceEndDate, $taskRecurrence, $recurrenceParams): Task {
             $task = $this->taskProvider->resolveTask($task);
+            $timezone = $this->getUserTimezone();
 
-            [$category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams]
-                = $this->resolveCommonValues($category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams);
+            [$category, $participatingUsers, $dateTime, $recurrenceStartDate, $recurrenceEndDate, $taskRecurrence, $recurrenceParams]
+                = $this->resolveCommonValues($category, $participatingUsers, $dateTime, $recurrenceEndDate, $taskRecurrence, $recurrenceParams);
+            $dateTime->getTimezone()->getLocation();
 
-            return $this->updater->update($task, $name, $description, $duration, $category, $participatingUsers, $startsAt, $recurrenceEndsAt, $taskRecurrence, $recurrenceParams);
+            return $this->updater->update($task, $name, $description, $duration, $category, $participatingUsers, $dateTime, $timezone, $recurrenceStartDate, $recurrenceEndDate, $taskRecurrence, $recurrenceParams);
         });
     }
 }

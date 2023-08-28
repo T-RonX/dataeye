@@ -25,6 +25,11 @@ readonly class FacadeUserContext extends BaseFacadeContext
 
     public function setContext(mixed $value): void
     {
+        if ($value === null)
+        {
+            return;
+        }
+
         $userId = (int) $value;
         $user = $this->userProvider->getUser($userId);
 

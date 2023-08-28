@@ -213,6 +213,11 @@
         {% endblock %}
         </style>
         {% block javascripts %}
+            <script>
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                window.tz = tz;
+                console.log(tz);
+            </script>
         {% endblock %}
     </head>
     <body>

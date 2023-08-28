@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Task\Entity;
 
+use App\Locale\Entity\Timezone;
 use App\Task\Repository\TaskRepository;
 use App\User\Entity\User;
 use App\Uuid\Entity\EntityUuidInterface;
 use App\Uuid\Entity\EntityUuidTrait;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,11 +27,18 @@ class Task implements EntityUuidInterface
     #[ORM\Column(length: 100)]
     private string $name;
 
-    #[ORM\Column(length: 1000, nullable: true)]
-    private string $description;
+    #[ORM\Column(name: 'datetime', type: 'datetime_immutable')]
+    private DateTimeInterface $dateTime;
+
+    #[ORM\ManyToOne(targetEntity: Timezone::class)]
+    #[ORM\JoinColumn(name: 'timezone', referencedColumnName: 'id')]
+    private Timezone $timezone;
 
     #[ORM\Column(nullable: true)]
     private int $duration;
+
+    #[ORM\Column(length: 1000, nullable: true)]
+    private string $description;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'owned_by', referencedColumnName: 'id', nullable: false)]
@@ -94,26 +103,49 @@ class Task implements EntityUuidInterface
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDateTime(): DateTimeInterface
     {
-        return $this->description;
+        return $this->dateTime;
     }
-    
-    public function setDescription(string $description): self
+
+    public function setDateTime(DateTimeInterface $dateTime): self
     {
-        $this->description = $description;
+        $this->dateTime = $dateTime;
 
         return $this;
     }
-    
+
+    public function getTimezone(): Timezone
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(Timezone $timezone): self
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
     public function getDuration(): int
     {
         return $this->duration;
     }
-    
+
     public function setDuration(int $duration): self
     {
         $this->duration = $duration;
+
+        return $this;
+    }
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }
@@ -129,48 +161,48 @@ class Task implements EntityUuidInterface
 
         return $this;
     }
-    
+
     public function getCategory(): ?TaskCategory
     {
         return $this->category;
     }
-    
+
     public function setCategory(?TaskCategory $category): self
     {
         $this->category = $category;
 
         return $this;
     }
-    
+
     public function getRecurrences(): Collection
     {
         return $this->recurrences;
     }
-    
+
     public function setRecurrences(Collection $recurrences): self
     {
         $this->recurrences = $recurrences;
 
         return $this;
     }
-    
+
     public function getParticipants(): Collection
     {
         return $this->participants;
     }
-    
+
     public function setParticipants(Collection $participants): self
     {
         $this->participants = $participants;
 
         return $this;
     }
-    
+
     public function getCompletions(): Collection
     {
         return $this->completions;
     }
-    
+
     public function setCompletions(Collection $completions): self
     {
         $this->completions = $completions;
@@ -182,7 +214,7 @@ class Task implements EntityUuidInterface
     {
         return $this->postpones;
     }
-    
+
     public function setPostpones(Collection $postpones): self
     {
         $this->postpones = $postpones;

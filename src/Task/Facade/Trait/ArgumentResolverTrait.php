@@ -18,10 +18,13 @@ use App\Task\Provider\TaskCategoryProvider;
 use App\User\Entity\User;
 use App\User\Provider\UserProvider;
 use DateTimeInterface;
+use DateTimeZone;
 use Symfony\Contracts\Service\Attribute\Required;
 
 trait ArgumentResolverTrait
 {
+    use UserTimezoneTrait;
+
     private DateTimeProvider $dateTimeProvider;
     private UserProvider $userProvider;
     private TaskCategoryProvider $taskCategoryProvider;
@@ -29,13 +32,14 @@ trait ArgumentResolverTrait
     /**
      * @return array{TaskCategory|null, TaskParticipant[], DateTimeInterface, DateTimeInterface|null, RecurrenceType|null, mixed[}
      */
-    private function resolveCommonValues(TaskCategory|int|null $category, array|string $participatingUsers, DateTimeInterface|string $startsAt, DateTimeInterface|string|null $recurrenceEndsAt, RecurrenceType|int|null $taskRecurrence, array|null $recurrenceParams) : array
+    private function resolveCommonValues(TaskCategory|int|null $category, array|string $participatingUsers, DateTimeInterface|string $dateTime, DateTimeInterface|string|null $recurrenceEndDate, RecurrenceType|int|null $taskRecurrence, array|null $recurrenceParams) : array
     {
         return [
             $this->resolveCategory($category),
             $this->resolveParticipatingUsers($participatingUsers),
-            $this->dateTimeProvider->resolveDateTime($startsAt),
-            $this->dateTimeProvider->resolveNullableDateTime($recurrenceEndsAt),
+            $resolvedDateTime = $this->dateTimeProvider->resolveDateTime($dateTime),
+            $this->resolveDateFromUTCDateTime($resolvedDateTime),
+            $this->dateTimeProvider->resolveNullableDateTime($recurrenceEndDate),
             $taskRecurrence = $this->resolveTaskRecurrence($taskRecurrence),
             $this->resolveTaskRecurrenceParams($taskRecurrence, $recurrenceParams),
         ];
@@ -149,6 +153,13 @@ trait ArgumentResolverTrait
     private function resolveCategory(TaskCategory|int|null $category): ?TaskCategory
     {
         return $category === null ? null :$this->taskCategoryProvider->resolveTaskCategory($category);
+    }
+
+    private function resolveDateFromUTCDateTime(DateTimeInterface $dateTime): DateTimeInterface
+    {
+        $timezone = $this->getUserTimezone();
+
+        return $this->dateTimeProvider->asDateImmutableUTC($dateTime, new DateTimeZone($timezone->getName()));
     }
 
     #[Required]
