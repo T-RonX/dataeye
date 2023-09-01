@@ -34,6 +34,18 @@ readonly class AuditLogByPropertyEventListener
         $this->addByProperty($eventArgs);
     }
 
+    #[AsEventListener(event: PropertyEvent::ON_COLLECTION_INSERT->name)]
+    public function onCollectionInsert(PropertyEventArgs $eventArgs): void
+    {
+        $this->addByProperty($eventArgs);
+    }
+
+    #[AsEventListener(event: PropertyEvent::ON_COLLECTION_REMOVE->name)]
+    public function onCollectionRemove(PropertyEventArgs $eventArgs): void
+    {
+        $this->addByProperty($eventArgs);
+    }
+
     private function addByProperty(PropertyEventArgs $eventArgs): void
     {
         if ($this->userContext->hasUser())

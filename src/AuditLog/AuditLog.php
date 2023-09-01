@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\AuditLog;
 
 use App\AuditLog\Entity\AuditLog as AuditLogEntity;
+use App\AuditLog\Entity\AuditLogCollectionInsert;
+use App\AuditLog\Entity\AuditLogCollectionRemove;
 use App\AuditLog\Entity\AuditLogEntity as AuditLogEntityEntity;
 use App\AuditLog\Entity\AuditLogFieldCreate;
 use App\AuditLog\Entity\AuditLogFieldUpdate;
@@ -94,6 +96,82 @@ class AuditLog
         $this->requireFlush();
     }
 
+    private array $scheduledCollectionInserts = [];
+    private array $scheduledCollectionRemovals = [];
+
+    public function hasCollectionUpdatesScheduled(): bool
+    {
+        return count($this->scheduledCollectionInserts) > 0
+            || count($this->scheduledCollectionRemovals) > 0;
+    }
+
+    public function scheduleForCollectionInsert(object $ownerEntity, string $ownerField, object $collectionItem): void
+    {
+        $this->scheduledCollectionInserts[] = [$ownerEntity, $ownerField, $collectionItem];
+    }
+
+    public function scheduleForCollectionRemoval(object $ownerEntity, string $ownerField, object $collectionItem): void
+    {
+        $this->scheduledCollectionRemovals[] = [$ownerEntity, $ownerField, $collectionItem];
+    }
+
+    public function handleCollectionUpdatesSchedule(): void
+    {
+        if (count($this->scheduledCollectionInserts))
+        {
+            foreach ($this->scheduledCollectionInserts as [$ownerEntity, $ownerField, $collectionItem])
+            {
+                $this->logCollectionInsert($ownerEntity, $ownerField, $collectionItem);
+            }
+
+            $this->scheduledCollectionInserts = [];
+
+            $this->requireFlush();
+        }
+
+        if (count($this->scheduledCollectionRemovals))
+        {
+            foreach ($this->scheduledCollectionRemovals as [$ownerEntity, $ownerField, $collectionItem])
+            {
+                $this->logCollectionRemove($ownerEntity, $ownerField, $collectionItem);
+            }
+
+            $this->scheduledCollectionRemovals = [];
+
+            $this->requireFlush();
+        }
+    }
+
+    public function logCollectionInsert(object $ownerEntity, string $ownerField, object $collectionItem): void
+    {
+        $log = $this->createAuditLog($ownerEntity, EntityModeEnum::CollectionInsert);
+
+        $collectionInsert = $this->createAuditLogCollectionInsert($ownerEntity, $ownerField, $collectionItem);
+        $collectionInsert->setAuditLog($log);
+
+        $this->entityManager->persist($collectionInsert);
+        $this->entityManager->persist($log);
+
+        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_COLLECTION_INSERT, $log, $ownerEntity);
+
+        $this->requireFlush();
+    }
+
+    public function logCollectionRemove(object $ownerEntity, string $ownerField, object $collectionItem): void
+    {
+        $log = $this->createAuditLog($ownerEntity, EntityModeEnum::CollectionRemove);
+
+        $collectionInsert = $this->createAuditLogCollectionRemove($ownerEntity, $ownerField, $collectionItem);
+        $collectionInsert->setAuditLog($log);
+
+        $this->entityManager->persist($collectionInsert);
+        $this->entityManager->persist($log);
+
+        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_COLLECTION_INSERT, $log, $ownerEntity);
+
+        $this->requireFlush();
+    }
+
     private function handleAuditLogPropertyEvent(PropertyEvent $event, AuditLogEntity $log, object $entity)
     {
         $eventArgs = new PropertyEventArgs($entity);
@@ -134,6 +212,22 @@ class AuditLog
         return $this->factory->createAuditLogFieldCreate()
             ->setFieldName($fieldName)
             ->setValue($this->createAuditLogFieldStringValue($value));
+    }
+
+    private function createAuditLogCollectionInsert(object $ownerEntity, string $ownerField, object $collectionItem): AuditLogCollectionInsert
+    {
+        return $this->factory->createAuditLogCollectionInsert()
+            ->setFieldName($ownerField)
+            ->setEntity($this->getOrCreateAuditLogEntity($ownerEntity))
+            ->setEntityId($this->getEntityId($collectionItem));
+    }
+
+    private function createAuditLogCollectionRemove(object $ownerEntity, string $ownerField, object $collectionItem): AuditLogCollectionRemove
+    {
+        return $this->factory->createAuditLogCollectionRemove()
+            ->setFieldName($ownerField)
+            ->setEntity($this->getOrCreateAuditLogEntity($ownerEntity))
+            ->setEntityId($this->getEntityId($collectionItem));
     }
 
     private function createAuditLogFieldStringValue(mixed $value): ?string
