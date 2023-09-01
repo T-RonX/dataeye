@@ -21,10 +21,10 @@ class TaskRecurrenceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('i')
             ->where('i.task = :task')
-            ->andWhere('i.startDate <= :datetime AND (i.endDate > :datetime OR i.endDate IS NULL)')
+//            ->andWhere('i.startDate <= :datetime AND (i.endDate > :datetime OR i.endDate IS NULL)')
             ->andWhere('i.deletedAt IS NULL')
             ->setParameter('task', $task)
-            ->setParameter('datetime', $dateTime)
+//            ->setParameter('datetime', $dateTime)
             ->getQuery()
             ->getOneOrNullResult();
     }
