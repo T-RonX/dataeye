@@ -167,7 +167,7 @@ class AuditLog
         $this->entityManager->persist($collectionInsert);
         $this->entityManager->persist($log);
 
-        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_COLLECTION_INSERT, $log, $ownerEntity);
+        $this->handleAuditLogPropertyEvent(PropertyEvent::ON_COLLECTION_REMOVE, $log, $ownerEntity);
 
         $this->requireFlush();
     }
