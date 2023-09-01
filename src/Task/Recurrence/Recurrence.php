@@ -50,8 +50,6 @@ readonly class Recurrence
             $task->getRecurrences()->add($newRecurrence);
             $this->entityManager->persist($newRecurrence);
         }
-
-        $this->entityManager->flush();
     }
 
     private function makeDatetimeImmutable(DateTimeInterface $dateTime): DateTimeImmutable
