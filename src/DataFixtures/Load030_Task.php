@@ -19,6 +19,7 @@ use App\Task\Enum\DayOrdinal;
 use App\Task\Enum\Month;
 use App\Task\Enum\WeekOrdinal;
 use App\User\Entity\User;
+use DateTime;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -150,7 +151,8 @@ class Load030_Task extends Fixture
             ->setEndDate(new DateTimeImmutable('2023-12-31 23:59:59'))
             ->setDay(Day::Tuesday)
             ->setMonth(Month::February)
-            ->setDayOrdinal(DayOrdinal::Second);
+            ->setDayOrdinal(DayOrdinal::Second)
+            ->setDeletedAt(new DateTime());
 
         $recurrence_2 = (new TaskRecurrenceMonthRelative())
             ->setTask($this->getReference('user_1_task_1', Task::class))
