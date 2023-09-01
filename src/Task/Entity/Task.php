@@ -27,7 +27,7 @@ class Task implements EntityUuidInterface
     #[ORM\Column(length: 100)]
     private string $name;
 
-    #[ORM\Column(name: 'datetime', type: 'datetime_immutable')]
+    #[ORM\Column(name: 'datetime', type: 'datetime_immutable', options: ['secondPrecision' => true])]
     private DateTimeInterface $dateTime;
 
     #[ORM\ManyToOne(targetEntity: Timezone::class)]
