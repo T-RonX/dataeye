@@ -60,4 +60,9 @@ class DateTimeProvider
     {
         return new DateTimeZone('UTC');
     }
+
+    public function changeTimeZone(DateTimeInterface $date, DateTimeZone $timezone): DateTimeInterface
+    {
+        return new DateTimeImmutable($date->format('Y-m-d H:i:s.u'), $timezone);
+    }
 }
