@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace App\Task\Recurrence\TypeHandler;
 
+use App\DateTimeProvider\DateTimeProvider;
 use App\Task\Entity\TaskRecurrence;
 use App\Task\Enum\Day;
+use DateTimeInterface;
 use RuntimeException;
 
 class BaseTypeHandler
 {
+    public function __construct(
+        protected DateTimeProvider $dateTimeProvider,
+    ){
+    }
+
     public function validateType(TaskRecurrence $recurrence, string $expectedType): void
     {
         if (!$recurrence instanceof $expectedType)
@@ -36,5 +43,20 @@ class BaseTypeHandler
     protected function getFirstDayOfWeek(): Day
     {
         return Day::Monday;
+    }
+
+    protected function isLimitReached(int|DateTimeInterface $limit, DateTimeInterface $nextDatetime = null, int $count = null): bool
+    {
+        if (is_int($limit))
+        {
+            return $count >= $limit;
+        }
+
+        return $nextDatetime > $limit;
+    }
+
+    protected function getEndDate(DateTimeInterface $dateTime): DateTimeInterface
+    {
+
     }
 }

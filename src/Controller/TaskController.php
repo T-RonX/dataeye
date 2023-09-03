@@ -43,7 +43,8 @@ class TaskController extends AbstractController
 
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
-        $recurrences = $task ? $provider->getRecurrence($task, $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone()) : [];
+        $timezone = $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone();
+        $recurrences = $task ? $provider->getOccurrences($task, $timezone, new \DateTime('2030-9-3 11:49:00', new \DateTimeZone('Europe/Amsterdam'))) : [];
 
         return $this->render('Task/overview.html.twig', [
             'task_form' => $form,

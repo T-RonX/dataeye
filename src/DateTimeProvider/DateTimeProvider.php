@@ -13,9 +13,9 @@ use DateTimeZone;
 
 class DateTimeProvider
 {
-    public function getNow(): DateTimeImmutable
+    public function getNow(DateTimeZone $timezone = null): DateTimeImmutable
     {
-        return CarbonImmutable::now();
+        return CarbonImmutable::now($timezone);
     }
 
     public function getNowMutable(): DateTime
@@ -45,7 +45,15 @@ class DateTimeProvider
     {
         return match (true) {
             is_string($dateTime) => $this->create($dateTime),
-            default => $dateTime
+            default => $dateTime,
+        };
+    }
+
+    public function resolveDateTimeZone(string|DateTimeZone $timezone): DateTimeZone
+    {
+        return match (true) {
+            is_string($timezone) => $this->createTimezone($timezone),
+            default => $timezone,
         };
     }
 
@@ -58,7 +66,12 @@ class DateTimeProvider
 
     private function createTimezoneUTC(): DateTimeZone
     {
-        return new DateTimeZone('UTC');
+        return $this->createTimezone('UTC');
+    }
+
+    private function createTimezone(string $timezone): DateTimeZone
+    {
+        return new DateTimeZone($timezone);
     }
 
     public function changeTimeZone(DateTimeInterface $date, DateTimeZone $timezone): DateTimeInterface

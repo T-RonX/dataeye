@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 interface TypeHandlerInterface
 {
     /**
-     * @return DateTimeInterface[]
+     * @return CarbonInterface[]
      */
-    public function getRecurringDates(CarbonInterface $startsAt, DateTimeInterface $endsAt, TaskRecurrence $recurrence): array;
+    public function getRecurringDates(CarbonInterface $startDate, TaskRecurrence $recurrence, int|DateTimeInterface $limit): array;
 }

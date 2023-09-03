@@ -22,23 +22,28 @@ class YearTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 {
     private const LEAP_YEAR_MAX_INTERVAL = 9;
 
-    public function getRecurringDates(CarbonInterface $startsAt, DateTimeInterface $endsAt, TaskRecurrence|TaskRecurrenceYearAbsolute|TaskRecurrenceYearRelative $recurrence): array
+    public function getRecurringDates(CarbonInterface $startsAt, TaskRecurrence|TaskRecurrenceYearAbsolute|TaskRecurrenceYearRelative $recurrence, int|DateTimeInterface $limit): array
     {
         $upcomingDates = [];
         $yearsToAdd = 0;
-        $daysRemaining = 100;
         $doCollectDates = false;
-        $startsAt = $startsAt->setTime(0, 0);
-        $startDate = $startsAt->startOfMonth();
+        $startDate = $startsAt->startOfMonth()->setTimeFrom($startsAt);;
         $getDay = $recurrence instanceof TaskRecurrenceYearAbsolute ? $this->getAbsoluteDate(...) : $this->getRelativeDate(...);
         $invalidAttemptsRemaining = self::LEAP_YEAR_MAX_INTERVAL - 1;
+        $now = $this->dateTimeProvider->getNow($startsAt->getTimezone());
+        $count = 0;
 
-        while ($daysRemaining && $invalidAttemptsRemaining)
+        while ($invalidAttemptsRemaining)
         {
             try
             {
-                $nextDate = $getDay($recurrence, $startDate->addYears($yearsToAdd));
+                $nextDateTime = $getDay($recurrence, $startDate->addYears($yearsToAdd));
                 $invalidAttemptsRemaining = self::LEAP_YEAR_MAX_INTERVAL - 1;
+
+                if ($this->isLimitReached($limit, $nextDateTime, $count))
+                {
+                    break;
+                }
             }
             catch (InvalidRecurrenceException)
             {
@@ -47,11 +52,11 @@ class YearTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
                 continue;
             }
 
-            if ($nextDate && ($doCollectDates || $nextDate >= $startsAt))
+            if ($nextDateTime && ($doCollectDates || $nextDateTime >= $now))
             {
                 $doCollectDates = true;
-                $upcomingDates[] = $nextDate;
-                --$daysRemaining;
+                $upcomingDates[] = $nextDateTime;
+                ++$count;
             }
 
             ++$yearsToAdd;
@@ -62,7 +67,7 @@ class YearTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 
     private function getAbsoluteDate(TaskRecurrenceYearAbsolute $recurrence, CarbonInterface $year): ?DateTimeInterface
     {
-        $month = $year->setMonth($recurrence->getMonth()->toCarbon())->firstOfMonth();
+        $month = $year->setMonth($recurrence->getMonth()->toCarbon())->firstOfMonth()->setTimeFrom($year);
         $daysInMonth = $month->daysInMonth;
         $dayNumber = $recurrence->getDayNumber();
 
@@ -87,27 +92,27 @@ class YearTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 
     private function getFirstOccurrence(CarbonInterface $year, Month $month, Day $day): DateTimeInterface
     {
-        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon());
+        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->setTimeFrom($year);
     }
 
     private function getSecondOccurrence(CarbonInterface $year, Month $month, Day $day): DateTimeInterface
     {
-        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->addWeek();
+        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->addWeek()->setTimeFrom($year);
     }
 
     private function getThirdOccurrence(CarbonInterface $year, Month $month, Day $day): DateTimeInterface
     {
-        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->addWeeks(2);
+        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->addWeeks(2)->setTimeFrom($year);
     }
 
     private function getFourthOccurrence(CarbonInterface $year, Month $month, Day $day): DateTimeInterface
     {
-        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->addWeeks(3);
+        return $year->setMonth($month->toCarbon())->firstOfMonth()->subDay()->next($day->toCarbon())->addWeeks(3)->setTimeFrom($year);
     }
 
     private function getLastOccurrence(CarbonInterface $year, Month $month, Day $day): DateTimeInterface
     {
-        $lastDayOfMonth = $year->setMonth($month->toCarbon())->endOfMonth();
+        $lastDayOfMonth = $year->setMonth($month->toCarbon())->endOfMonth()->setTimeFrom($year);
         $daysUntilTargetDay = ($lastDayOfMonth->dayOfWeek - $day->toCarbon() + 7) % 7;
 
         return $lastDayOfMonth->subDays($daysUntilTargetDay);

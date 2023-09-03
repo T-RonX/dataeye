@@ -37,8 +37,8 @@
 </div>
 {{ form_end(task_form, {render_rest: false}) }}
 <br/>
-{% for recurrence in recurrences %}
-	{{ recurrence.format('Y-m-d: H:i = l \\t\\h\\e jS \\of F Y \\a\\t H:i') }}<br/>
+{% for occurrence in recurrences.occurrences %}
+	{{ loop.index }}: {{ occurrence.format('Y-m-d H:i = l \\t\\h\\e jS \\of F Y \\a\\t H:i') }}<br/>
 {% endfor %}
 	<br/><br/><br/><br/>
 {% endblock %}

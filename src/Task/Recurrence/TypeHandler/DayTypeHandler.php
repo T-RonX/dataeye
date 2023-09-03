@@ -15,18 +15,22 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(RecurrenceType::Day->name)]
 class DayTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 {
-    public function getRecurringDates(CarbonInterface $startsAt, DateTimeInterface $endsAt, TaskRecurrence|TaskRecurrenceDay $recurrence): array
+    public function getRecurringDates(CarbonInterface $startsAt, TaskRecurrence|TaskRecurrenceDay $recurrence, int|DateTimeInterface $limit): array
     {
-        $interval = $recurrence->getInterval();
         $upcomingDates = [];
-        $daysToAdd = 0;
-        $remaining = 100;
-        $startsDate = $startsAt->setTime(0, 0);
+        $count = 0;
+        $now = $this->dateTimeProvider->getNow($startsAt->getTimezone());
+        $nextDateTime = $startsAt;
 
-        while ($remaining--)
+        while (!$this->isLimitReached($limit, $nextDateTime, $count))
         {
-            $upcomingDates[] = $startsDate->addDays($daysToAdd);
-            $daysToAdd += $interval;
+            if ($nextDateTime >= $now)
+            {
+                $upcomingDates[] = $nextDateTime;
+                ++$count;
+            }
+
+            $nextDateTime = $nextDateTime->addDays(1);
         }
 
         return $upcomingDates;

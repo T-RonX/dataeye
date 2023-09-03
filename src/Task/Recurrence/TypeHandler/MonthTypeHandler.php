@@ -18,26 +18,31 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(RecurrenceType::Month->name)]
 class MonthTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 {
-    public function getRecurringDates(CarbonInterface $startsAt, DateTimeInterface $endsAt, TaskRecurrence|TaskRecurrenceMonthAbsolute|TaskRecurrenceMonthRelative $recurrence): array
+    public function getRecurringDates(CarbonInterface $startsAt, TaskRecurrence|TaskRecurrenceMonthAbsolute|TaskRecurrenceMonthRelative $recurrence, int|DateTimeInterface $limit): array
     {
         $interval = $recurrence->getInterval();
         $upcomingDates = [];
         $monthsToAdd = 0;
-        $remaining = 100;
         $doCollectDates = false;
-        $startsAt = $startsAt->setTime(0, 0);
-        $startDate = $startsAt->startOfMonth();
+        $startDate = $startsAt->startOfMonth()->setTimeFrom($startsAt);
         $getDay = $recurrence instanceof TaskRecurrenceMonthAbsolute ? $this->getAbsoluteDate(...) : $this->getRelativeDate(...);
+        $now = $this->dateTimeProvider->getNow($startsAt->getTimezone());
+        $count = 0;
 
-        while ($remaining)
+        while (true)
         {
-            $nextDate = $getDay($recurrence, $startDate->addMonths($monthsToAdd));
+                $nextDateTime = $getDay($recurrence, $startDate->addMonths($monthsToAdd));
 
-            if ($nextDate && ($doCollectDates || $nextDate >= $startsAt))
+            if ($this->isLimitReached($limit, $nextDateTime, $count))
+            {
+                break;
+            }
+
+            if ($nextDateTime && ($doCollectDates || $nextDateTime >= $now))
             {
                 $doCollectDates = true;
-                $upcomingDates[] = $nextDate;
-                --$remaining;
+                $upcomingDates[] = $nextDateTime;
+                ++$count;
             }
 
             $monthsToAdd += $interval;
@@ -67,27 +72,27 @@ class MonthTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 
     private function getFirstOccurrence(CarbonInterface $month, Day $day): DateTimeInterface
     {
-        return $month->subDay()->next($day->toCarbon());
+        return $month->subDay()->next($day->toCarbon())->setTimeFrom($month);
     }
 
     private function getSecondOccurrence(CarbonInterface $month, Day $day): DateTimeInterface
     {
-        return $month->subDay()->next($day->toCarbon())->addWeek();
+        return $month->subDay()->next($day->toCarbon())->addWeek()->setTimeFrom($month);
     }
 
     private function getThirdOccurrence(CarbonInterface $month, Day $day): DateTimeInterface
     {
-        return $month->subDay()->next($day->toCarbon())->addWeeks(2);
+        return $month->subDay()->next($day->toCarbon())->addWeeks(2)->setTimeFrom($month);
     }
 
     private function getFourthOccurrence(CarbonInterface $month, Day $day): DateTimeInterface
     {
-        return $month->subDay()->next($day->toCarbon())->addWeeks(3);
+        return $month->subDay()->next($day->toCarbon())->addWeeks(3)->setTimeFrom($month);
     }
 
     private function getLastOccurrence(CarbonInterface $month, Day $day): DateTimeInterface
     {
-        $lastDayOfMonth = $month->endOfMonth();
+        $lastDayOfMonth = $month->endOfMonth()->setTimeFrom($month);
         $daysUntilTargetDay = ($lastDayOfMonth->dayOfWeek - $day->toCarbon() + 7) % 7;
 
         return $lastDayOfMonth->subDays($daysUntilTargetDay);

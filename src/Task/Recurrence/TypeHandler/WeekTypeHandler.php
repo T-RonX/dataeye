@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 #[AsTaggedItem(RecurrenceType::Week->name)]
 class WeekTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 {
-    public function getRecurringDates(CarbonInterface $startsAt, DateTimeInterface $endsAt, TaskRecurrence|TaskRecurrenceWeek $recurrence): array
+    public function getRecurringDates(CarbonInterface $startsAt, TaskRecurrence|TaskRecurrenceWeek $recurrence, int|DateTimeInterface $limit): array
     {
         $this->validateType($recurrence, TaskRecurrenceWeek::class);
 
@@ -26,29 +26,34 @@ class WeekTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
             return [];
         }
 
-        $startsAt = $startsAt->setTime(0, 0);
-        $startsDate = $startsAt->startOfWeek($this->getFirstDayOfWeek()->toCarbon())->subDay();
+        $now = $this->dateTimeProvider->getNow($startsAt->getTimezone());
+        $startsDate = $startsAt->startOfWeek($this->getFirstDayOfWeek()->toCarbon())->subDay()->setTimeFrom($startsAt);
         $currentDate = $startsDate;
 
         $upcomingDates = [];
-
         $interval = $recurrence->getInterval();
         $numberOfDates = 100;
         $weeksToAdd = 0;
         $doCollectDates = false;
-
+        $count = 0;
         $days = $this->getWeekDaysOrdered($recurrence->getDays());
 
-        while (count($upcomingDates) < $numberOfDates)
+        while (true)
         {
             foreach ($days as $day)
             {
-                $nextDate = $currentDate->next($day->toCarbon());
+                $nextDateTime = $currentDate->next($day->toCarbon())->setTimeFrom($startsDate);
 
-                if ($doCollectDates || $nextDate >= $startsAt)
+                if ($this->isLimitReached($limit, $nextDateTime, $count))
+                {
+                    break 2;
+                }
+
+                if ($doCollectDates || $nextDateTime >= $now)
                 {
                     $doCollectDates = true;
-                    $upcomingDates[] = $nextDate;
+                    $upcomingDates[] = $nextDateTime;
+                    ++$count;
                 }
 
                 if (count($upcomingDates) >= $numberOfDates)

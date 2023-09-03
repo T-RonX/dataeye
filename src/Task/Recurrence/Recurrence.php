@@ -39,8 +39,8 @@ readonly class Recurrence
 
         if ($recurrence !== null)
         {
-            $startDate = $startDate ? $this->makeDatetimeImmutable($startDate) : null;
-            $endDate = $endDate ? $this->makeDatetimeImmutable($endDate) : null;
+            $startDate = $startDate ? $this->makeDateTimeImmutable($startDate) : null;
+            $endDate = $endDate ? $this->makeDateTimeImmutable($endDate) : null;
 
             $newRecurrence = ($this->creator->create($recurrence, $params))
                 ->setTask($task)
@@ -52,7 +52,7 @@ readonly class Recurrence
         }
     }
 
-    private function makeDatetimeImmutable(DateTimeInterface $dateTime): DateTimeImmutable
+    private function makeDateTimeImmutable(DateTimeInterface $dateTime): DateTimeImmutable
     {
        return $dateTime instanceof DateTimeImmutable ? $dateTime : DateTimeImmutable::createFromInterface($dateTime);
     }

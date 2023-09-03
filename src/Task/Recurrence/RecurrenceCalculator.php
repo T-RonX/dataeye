@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Task\Recurrence;
 
 use App\DateTimeProvider\DateTimeProvider;
-use App\Locale\Entity\Timezone;
 use App\Task\Entity\Task;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskRecurrenceProvider;
@@ -29,40 +28,32 @@ readonly class RecurrenceCalculator
     /**
      * @return DateTimeInterface[]
      */
-    public function getRecurrence(Task $task, Timezone $timezoneOutput): array
+    public function getRecurrence(Task $task, DateTimeZone $timezoneOutput, int|DateTimeInterface $limit): array
     {
         $recurrence = $this->recurrenceProvider->getCurrentTaskRecurrence($task);
+        $taskDateLocal = $task->getDateTime()->setTimezone($timezoneOutput);
 
         if (!$recurrence)
         {
-            return [];
+            return [$taskDateLocal];
         }
 
-        $startsAt = $recurrence->getStartDate();
-        $startDate = $startsAt instanceof CarbonInterface ? $startsAt : CarbonImmutable::createFromInterface($startsAt);
-        $endsDate = $startDate->clone()->addYear();
+        $recurrenceStartDate = $this->dateTimeProvider->changeTimeZone($recurrence->getStartDate(), $timezoneOutput);
+        $startDate = ($recurrenceStartDate instanceof CarbonInterface ? $recurrenceStartDate : new CarbonImmutable($recurrenceStartDate))
+            ->setTimeFrom($taskDateLocal);
 
-        $recurringDates =  $this->getTypeHandler($recurrence->getRecurrenceType())
-            ->getRecurringDates($startDate, $endsDate, $recurrence);
+        $maxEndDate = ($recurrence->getEndDate() ?: (new CarbonImmutable($this->dateTimeProvider->getNow()))->addYear(1))
+            ->setTimezone($timezoneOutput);
+        $endDate = ($maxEndDate instanceof CarbonInterface ? $maxEndDate : new CarbonImmutable($maxEndDate))
+            ->endOfDay();
 
-        return $this->setTimesAndTimezoneToDates($recurringDates, $task->getDateTime(), new DateTimeZone($timezoneOutput->getName()));
-    }
-
-    /**
-     * @return DateTimeInterface[]
-     *
-     * @param CarbonInterface[] $dates
-     */
-    private function setTimesAndTimezoneToDates(array $dates, DateTimeInterface $timeFrom, DateTimeZone $timezone): array
-    {
-        $dateTimes = [];
-
-        foreach($dates as $date)
+        if ($limit instanceof DateTimeInterface)
         {
-            $dateTimes[] = $this->dateTimeProvider->changeTimeZone($date->setTimeFrom($timeFrom->setTimezone($timezone)), $timezone);
+            $limit = min($endDate, $limit);
         }
 
-        return $dateTimes;
+        return $this->getTypeHandler($recurrence->getRecurrenceType())
+            ->getRecurringDates($startDate, $recurrence, $limit);
     }
 
     private function getTypeHandler(RecurrenceType $type): TypeHandlerInterface
