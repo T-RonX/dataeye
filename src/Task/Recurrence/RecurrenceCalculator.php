@@ -28,7 +28,7 @@ readonly class RecurrenceCalculator
     /**
      * @return DateTimeInterface[]
      */
-    public function getRecurrence(Task $task, DateTimeZone $timezoneOutput, int|DateTimeInterface $limit): array
+    public function getRecurrence(Task $task, DateTimeZone $timezoneOutput, int|DateTimeInterface $limit, DateTimeInterface $lowerBound = null): array
     {
         $recurrence = $this->recurrenceProvider->getCurrentTaskRecurrence($task);
         $taskDateLocal = $task->getDateTime()->setTimezone($timezoneOutput);
@@ -41,6 +41,11 @@ readonly class RecurrenceCalculator
         $recurrenceStartDate = $this->dateTimeProvider->changeTimeZone($recurrence->getStartDate(), $timezoneOutput);
         $startDate = ($recurrenceStartDate instanceof CarbonInterface ? $recurrenceStartDate : new CarbonImmutable($recurrenceStartDate))
             ->setTimeFrom($taskDateLocal);
+
+        if ($lowerBound !== null)
+        {
+            $startDate = max($startDate, (new CarbonImmutable($lowerBound))->setTimeFrom($startDate));
+        }
 
         $maxEndDate = ($recurrence->getEndDate() ?: (new CarbonImmutable($this->dateTimeProvider->getNow()))->addYear(1))
             ->setTimezone($timezoneOutput);

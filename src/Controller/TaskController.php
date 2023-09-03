@@ -44,13 +44,13 @@ class TaskController extends AbstractController
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
         $timezone = $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone();
-        $recurrences = $task ? $provider->getOccurrences($task, $timezone, new \DateTime('2030-9-3 11:49:00', new \DateTimeZone('Europe/Amsterdam'))) : [];
+        $occurrences = $task ? $provider->getOccurrences($task, $timezone, 100, new \DateTime()) : null;
 
         return $this->render('Task/overview.html.twig', [
-            'task_form' => $form,
+            'task_form' => $form->createView(),
             'task_delete_forms' => $deleteForms,
             'tasks' => $tasks,
-            'recurrences' => $recurrences,
+            'occurrences' => $occurrences,
         ]);
     }
 
@@ -83,10 +83,10 @@ class TaskController extends AbstractController
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
         return $this->render('Task/overview.html.twig', [
-            'task_form' => $form,
+            'task_form' => $form->createView(),
             'task_delete_forms' => $deleteForms,
             'tasks' => $tasks,
-            'recurrences' => [],
+            'occurrences' => null,
         ]);
     }
 
@@ -119,7 +119,7 @@ class TaskController extends AbstractController
         $deleteForms = $this->createTaskDeleteForms($tasks);
 
         return $this->render('Task/overview.html.twig', [
-            'task_form' => $form,
+            'task_form' => $form->createView(),
             'task_delete_forms' => $deleteForms,
             'tasks' => $tasks,
         ]);

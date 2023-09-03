@@ -36,11 +36,11 @@ readonly class TaskProviderFacade implements FacadeInterface
         return $this->taskProvider->getTasksByUser($this->userContext->getUser());
     }
 
-    public function getOccurrences(Task|int $task, Timezone|string $timezone, int|DateTimeInterface $limit): TaskOccurrences
+    public function getOccurrences(Task|int $task, Timezone|string $timezone, int|DateTimeInterface $limit, DateTimeInterface $lowerBound = null): TaskOccurrences
     {
         $task = $this->taskProvider->resolveTask($task);
         $dateTimezone = $this->dateTimeProvider->resolveDateTimeZone($timezone?->getName() ?: $timezone);
-        $occurrences = $this->recurrenceCalculator->getRecurrence($task, $dateTimezone, $limit);
+        $occurrences = $this->recurrenceCalculator->getRecurrence($task, $dateTimezone, $limit, $lowerBound);
 
         return $this->resultFactory->createTaskOccurrences($task, $occurrences);
     }
