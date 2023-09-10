@@ -47,7 +47,9 @@ class TaskForm extends AbstractType
         $builder
             ->add('name', TextType::class)
             ->add('description', TextareaType::class)
-            ->add('duration', NumberType::class)
+            ->add('duration', NumberType::class, [
+                'data' => 60
+            ])
             ->add('category', EntityType::class, [
                 'class' => TaskCategory::class,
                 'choice_label' => 'name',
