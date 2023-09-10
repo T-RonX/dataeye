@@ -41,7 +41,6 @@ readonly class TaskUpdater
         $this->updateParticipants($task, [$task->getOwnedBy(), ...$participatingUsers]);
 
         $this->entityManager->persist($task);
-        $this->entityManager->flush();
 
         return $task;
     }

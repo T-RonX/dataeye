@@ -31,7 +31,7 @@ class MonthTypeHandler extends BaseTypeHandler implements TypeHandlerInterface
 
         while (true)
         {
-                $nextDateTime = $getDay($recurrence, $startDate->addMonths($monthsToAdd));
+            $nextDateTime = $getDay($recurrence, $startDate->addMonths($monthsToAdd));
 
             if ($this->isLimitReached($limit, $nextDateTime, $count))
             {

@@ -19,6 +19,7 @@ use App\Task\Enum\DayOrdinal;
 use App\Task\Enum\Month;
 use App\Task\Enum\WeekOrdinal;
 use App\User\Entity\User;
+use Carbon\CarbonImmutable;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -73,7 +74,7 @@ class Load030_Task extends Fixture
         $this->createRecurrences();
         $this->createParticipants();
         $this->createCompletions();
-        $this->createPostpones();
+//        $this->createPostpones();
 
         $task_1->setRecurrences(new ArrayCollection([
             $this->getReference('user_1_task_1_recurrence_1', TaskRecurrenceYearRelative::class),
@@ -93,10 +94,10 @@ class Load030_Task extends Fixture
             $this->getReference('user_1_task_2_participant_1', TaskParticipant::class),
             $this->getReference('user_1_task_2_participant_2', TaskParticipant::class),
         ]))
-        ->setPostpones(new ArrayCollection([
-            $this->getReference('user_1_task_2_postpone_1', TaskPostpone::class),
-            $this->getReference('user_1_task_2_postpone_2', TaskPostpone::class),
-        ]))
+//        ->setDeferrals(new ArrayCollection([
+//            $this->getReference('user_1_task_2_postpone_1', TaskPostpone::class),
+//            $this->getReference('user_1_task_2_postpone_2', TaskPostpone::class),
+//        ]))
         ->setCompletions(new ArrayCollection([
                 $this->getReference('user_1_task_2_completion_1', TaskCompletion::class),
                 $this->getReference('user_1_task_2_completion_2', TaskCompletion::class),
@@ -251,13 +252,16 @@ class Load030_Task extends Fixture
     {
         $postpone_1 = (new TaskPostpone())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setPostponedAt(new DateTimeImmutable('2020-3-5 12:00:50'))
-            ->setPostponedBy($this->getReference('user_1_task_2_participant_1', TaskParticipant::class));
+            ->setDelayedTo((new CarbonImmutable())->addMinutes(30))
+            ->setDeferredAt(new DateTimeImmutable('2020-3-5 12:00:50'))
+            ->setDeferredBy($this->getReference('user_1_task_2_participant_1', TaskParticipant::class));
 
         $postpone_2 = (new TaskPostpone())
             ->setTask($this->getReference('user_1_task_1', Task::class))
-            ->setPostponedAt(new DateTimeImmutable('2020-3-4 22:20:00'))
-            ->setPostponedBy($this->getReference('user_1_task_2_participant_2', TaskParticipant::class));
+            ->setDelayedTo((new CarbonImmutable())->addMinutes(60))
+            ->setRecurrence($this->getReference('user_1_task_2_recurrence_1', TaskRecurrenceDay::class))
+            ->setDeferredAt(new DateTimeImmutable('2020-3-4 22:20:00'))
+            ->setDeferredBy($this->getReference('user_1_task_2_participant_2', TaskParticipant::class));
 
         $this->addReference('user_1_task_2_postpone_1', $postpone_1);
         $this->addReference('user_1_task_2_postpone_2', $postpone_2);

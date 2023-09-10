@@ -6,6 +6,8 @@ namespace App\Task\Entity;
 
 use App\Task\Enum\RecurrenceType;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -36,8 +38,19 @@ abstract class TaskRecurrence
     #[ORM\Column(name: 'end_date', type: 'date_immutable' , nullable: true)]
     private ?DateTimeInterface $endDate;
 
+    /**
+     * @var Collection<int, TaskPostpone>
+     */
+    #[ORM\OneToMany(mappedBy: 'recurrence', targetEntity: TaskPostpone::class)]
+    private Collection $postpones;
+
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable' , nullable: true)]
     private ?DateTimeInterface $deletedAt;
+
+    public function __construct()
+    {
+        $this->postpones = new ArrayCollection();
+    }
 
     abstract public function getRecurrenceType(): RecurrenceType;
 
@@ -49,6 +62,8 @@ abstract class TaskRecurrence
     public function setId(int $id): self
     {
         $this->id = $id;
+
+        return $this;
     }
 
     public function getTask(): Task
@@ -83,6 +98,18 @@ abstract class TaskRecurrence
     public function setEndDate(?DateTimeInterface $endDate): self
     {
         $this->endDate = $endDate;
+
+        return $this;
+    }
+
+    public function getPostpones(): Collection
+    {
+        return $this->postpones;
+    }
+
+    public function setPostpones(Collection $postpones): self
+    {
+        $this->postpones = $postpones;
 
         return $this;
     }

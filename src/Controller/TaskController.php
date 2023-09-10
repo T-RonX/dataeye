@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Context\UserContext;
+use App\Forms\TaskCompleteForm;
 use App\Forms\TaskDeleteForm;
 use App\Forms\TaskForm;
+use App\Forms\TaskPostponeForm;
 use App\Task\Entity\Task;
-use App\Task\Enum\RecurrenceField;
-use App\Task\Enum\RecurrenceMode;
-use App\Task\Enum\RecurrenceType;
+use App\Task\Enum\PostponeMethod;
+use App\Task\Facade\Result\TaskOccurrences;
+use App\Task\Facade\TaskCompleterFacade;
 use App\Task\Facade\TaskCreatorFacade;
 use App\Task\Facade\TaskDeleterFacade;
+use App\Task\Facade\TaskPostponerFacade;
 use App\Task\Facade\TaskProviderFacade;
 use App\Task\Facade\TaskUpdaterFacade;
 use App\UserPreference\Provider\UserPreferenceProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,16 +43,23 @@ class TaskController extends AbstractController
             $task !== null => $this->generateUrl('task_edit', ['task' => $task->getUuId()])
         });
 
-        $deleteForms = $this->createTaskDeleteForms($tasks);
 
-        $timezone = $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone();
-        $occurrences = $task ? $provider->getOccurrences($task, $timezone, 100, new \DateTime()) : null;
+//        $timezone = $this->preferenceProvider->getTimezone($this->userContext->getUser())->getTimezone();
+        //$occurrences = $task ? $provider->getOccurrences($task, $timezone, 100, new \DateTime()) : null;
+        $nextOccurrences = $provider->getNextOccurrencesForCurrentUser();
+
+        $deleteForms = $this->createTaskDeleteForms($tasks);
+        $postponeForms = $this->createTaskPostponeForms($nextOccurrences);
+        $completeForms = $this->createTaskCompleteForms($nextOccurrences);
 
         return $this->render('Task/overview.html.twig', [
             'task_form' => $form->createView(),
             'task_delete_forms' => $deleteForms,
+            'task_postpone_forms' => $postponeForms,
+            'task_complete_forms' => $completeForms,
             'tasks' => $tasks,
-            'occurrences' => $occurrences,
+            'occurrences' => [], //$occurrences,
+            'nextOccurrences' => $nextOccurrences,
         ]);
     }
 
@@ -66,13 +75,12 @@ class TaskController extends AbstractController
             $description = $form['description']->getData();
             $duration = (int) $form['duration']->getData();
             $category = $form['category']->getData();
-            $participants = iterator_to_array($form['participants']->getData());
             $dateTime = $form['datetime']->getData();
+            $participants = iterator_to_array($form['participants']->getData());
             $hasRecurrence = $form['has_recurrence']->getData();
-            $recurrenceForm = $form['recurrence'];
-            $recurrenceEndDate = $hasRecurrence ? $recurrenceForm['end_date']->getData() : null;
-            $recurrenceType = $hasRecurrence ? $recurrenceForm['type']->getData() : null;
-            $recurrenceParameters = $hasRecurrence ? $this->getRecurrenceFieldData($recurrenceForm) : [];
+            $recurrenceEndDate = $hasRecurrence ? $form['recurrence']['end_date']->getData() : null;
+            $recurrenceType = $hasRecurrence ? $form['recurrence']['type']->getData() : null;
+            $recurrenceParameters = $hasRecurrence ? $form['recurrence']->getData() : [];
 
             $creator->create($name, $description, $duration, $category, $participants, $dateTime, $recurrenceEndDate, $recurrenceType, $recurrenceParameters);
 
@@ -87,6 +95,7 @@ class TaskController extends AbstractController
             'task_delete_forms' => $deleteForms,
             'tasks' => $tasks,
             'occurrences' => null,
+            'nextOccurrences' => [],
         ]);
     }
 
@@ -105,10 +114,9 @@ class TaskController extends AbstractController
             $dateTime = $form['datetime']->getData();
             $participants = iterator_to_array($form['participants']->getData());
             $hasRecurrence = $form['has_recurrence']->getData();
-            $recurrenceForm = $form['recurrence'];
-            $recurrenceEndDate = $hasRecurrence ? $recurrenceForm['end_date']->getData() : null;
-            $recurrenceType = $hasRecurrence ? $recurrenceForm['type']->getData() : null;
-            $recurrenceParameters = $hasRecurrence ? $this->getRecurrenceFieldData($recurrenceForm) : [];
+            $recurrenceEndDate = $hasRecurrence ? $form['recurrence']['end_date']->getData() : null;
+            $recurrenceType = $hasRecurrence ? $form['recurrence']['type']->getData() : null;
+            $recurrenceParameters = $hasRecurrence ? $form['recurrence']->getData() : [];
 
             $updater->update($task, $name, $description, $duration, $category, $participants, $dateTime, $recurrenceEndDate, $recurrenceType, $recurrenceParameters);
 
@@ -139,78 +147,34 @@ class TaskController extends AbstractController
         return $this->redirectToRoute('task_overview');
     }
 
-    private function getRecurrenceFieldData(Form $form): array
+    #[Route('/task/postpone/{task}', 'task_postpone', requirements: ['task' => '.{36}'], methods: ['post'])]
+    public function postpone(Request $request, TaskPostponerFacade $postponer, Task $task): Response
     {
-        $recurrenceInterval = $form['interval']->getData();
-        $recurrenceType = $form['type']->getData();
-        $recurrenceTypeWeek = $form['type_week']->getData();
-        $recurrenceTypeMonth = $form['type_month']->getData();
-        $recurrenceTypeYear = $form['type_year']->getData();
+        $form = $this->createTaskPostponeForm();
+        $form->handleRequest($request);
 
-        $fields = [];
-
-        switch ($recurrenceType)
+        if ($form->isSubmitted() && $form->isValid())
         {
-            case RecurrenceType::Day:
-                $fields = [
-                    RecurrenceField::DayInterval->value => $recurrenceInterval,
-                ];
-                break;
+            $delay = $form['delay']->getData();
 
-            case RecurrenceType::Week:
-                $fields = [
-                    RecurrenceField::WeekInterval->value => $recurrenceInterval,
-                    RecurrenceField::WeekDays->value => $recurrenceTypeWeek['days'],
-                ];
-                break;
-
-            case RecurrenceType::Month:
-                switch ($recurrenceTypeMonth['mode'])
-                {
-                    case RecurrenceMode::Absolute:
-                        $fields = [
-                            RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
-                            RecurrenceField::MonthInterval->value => $recurrenceInterval,
-                            RecurrenceField::MonthAbsoluteDayNumber->value => $recurrenceTypeMonth['day_number'],
-                        ];
-                        break;
-
-                    case RecurrenceMode::Relative:
-                        $fields = [
-                            RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
-                            RecurrenceField::MonthInterval->value => $recurrenceInterval,
-                            RecurrenceField::MonthRelativeWeekOrdinal->value => $recurrenceTypeMonth['week_ordinal'],
-                            RecurrenceField::MonthRelativeDay->value => $recurrenceTypeMonth['day'],
-                        ];
-                        break;
-                }
-
-                break;
-
-            case RecurrenceType::Year:
-                switch ($recurrenceTypeYear['mode'])
-                {
-                    case RecurrenceMode::Absolute:
-                        $fields = [
-                            RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
-                            RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_absolute'],
-                            RecurrenceField::YearAbsoluteDayNumber->value => $recurrenceTypeYear['day_number'],
-                        ];
-                        break;
-
-                    case RecurrenceMode::Relative:
-                        $fields = [
-                            RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
-                            RecurrenceField::YearRelativeDayOrdinal->value => $recurrenceTypeYear['day_ordinal'],
-                            RecurrenceField::YearRelativeDay->value => $recurrenceTypeYear['day'],
-                            RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_relative'],
-                        ];
-                        break;
-                }
-                break;
+            $postponer->postpone($task, $delay ? PostponeMethod::TimeDelay : PostponeMethod::SkipOnce, $delay);
         }
 
-        return $fields;
+        return $this->redirectToRoute('task_overview');
+    }
+
+    #[Route('/task/complete/{task}', 'task_complete', requirements: ['task' => '.{36}'], methods: ['post'])]
+    public function complete(Request $request, TaskCompleterFacade $completer, Task $task): Response
+    {
+        $form = $this->createTaskCompleteForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid())
+        {
+            $completer->complete($task);
+        }
+
+        return $this->redirectToRoute('task_overview');
     }
 
     private function createTaskForm(?Task $task, string $action): FormInterface
@@ -234,8 +198,42 @@ class TaskController extends AbstractController
         );
     }
 
+    /**
+     * @param TaskOccurrences[] $occurrences
+     * @return array<int, FormView>
+     */
+    private function createTaskPostponeForms(array $occurrences): array
+    {
+        return array_map(
+            fn(): FormView => $this->createTaskPostponeForm()->createView(),
+            array_flip(array_map(static fn(TaskOccurrences $occurrence): int => $occurrence->getTask()->getId(), $occurrences))
+        );
+    }
+
+    /**
+     * @param TaskOccurrences[] $occurrences
+     * @return array<int, FormView>
+     */
+    private function createTaskCompleteForms(array $occurrences): array
+    {
+        return array_map(
+            fn(): FormView => $this->createTaskCompleteForm()->createView(),
+            array_flip(array_map(static fn(TaskOccurrences $occurrence): int => $occurrence->getTask()->getId(), $occurrences))
+        );
+    }
+
     private function createTaskDeleteForm(): FormInterface
     {
         return $this->createForm(TaskDeleteForm::class);
+    }
+
+    private function createTaskPostponeForm(): FormInterface
+    {
+        return $this->createForm(TaskPostponeForm::class);
+    }
+
+    private function createTaskCompleteForm(): FormInterface
+    {
+        return $this->createForm(TaskCompleteForm::class);
     }
 }

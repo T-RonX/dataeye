@@ -25,7 +25,6 @@ readonly class UserCreator
         $user->setPassword($this->passwordHasher->hashPassword($user, $password));
 
         $this->entityManager->persist($user);
-        $this->entityManager->flush();
 
         return $user;
     }

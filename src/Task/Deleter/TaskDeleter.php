@@ -10,13 +10,12 @@ use Doctrine\ORM\EntityManagerInterface;
 readonly class TaskDeleter
 {
     public function __construct(
-        private EntityManagerInterface$entityManager,
+        private EntityManagerInterface $entityManager,
     ) {
     }
     public function delete(Task $task): Task
     {
         $this->entityManager->remove($task);
-        $this->entityManager->flush();
 
         return $task;
     }

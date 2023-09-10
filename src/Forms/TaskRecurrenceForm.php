@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Forms;
 
 use App\Context\UserContext;
+use App\Forms\Transformer\CallbackReverseTransformer;
 use App\Task\Contract\RecurrenceIntervalInterface;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskRecurrence;
+use App\Task\Enum\RecurrenceField;
+use App\Task\Enum\RecurrenceMode;
 use App\Task\Enum\RecurrenceType;
 use App\Task\Provider\TaskRecurrenceProvider;
 use Symfony\Component\Form\AbstractType;
@@ -78,6 +81,84 @@ class TaskRecurrenceForm extends AbstractType
                 'data' => $recurrence?->getEndDate(),
                 'required' => false,
             ]);
+
+        $builder->addModelTransformer(new CallbackReverseTransformer(
+            $this->getFieldData(...)
+        ));
+    }
+
+    private function getFieldData(array $data): array
+    {
+        $recurrenceInterval = $data['interval'];
+        $recurrenceType = $data['type'];
+        $recurrenceTypeWeek = $data['type_week'];
+        $recurrenceTypeMonth = $data['type_month'];
+        $recurrenceTypeYear = $data['type_year'];
+
+        $fields = [];
+
+        switch ($recurrenceType)
+        {
+            case RecurrenceType::Day:
+                $fields = [
+                    RecurrenceField::DayInterval->value => $recurrenceInterval,
+                ];
+                break;
+
+            case RecurrenceType::Week:
+                $fields = [
+                    RecurrenceField::WeekInterval->value => $recurrenceInterval,
+                    RecurrenceField::WeekDays->value => $recurrenceTypeWeek['days'],
+                ];
+                break;
+
+            case RecurrenceType::Month:
+                switch ($recurrenceTypeMonth['mode'])
+                {
+                    case RecurrenceMode::Absolute:
+                        $fields = [
+                            RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
+                            RecurrenceField::MonthInterval->value => $recurrenceInterval,
+                            RecurrenceField::MonthAbsoluteDayNumber->value => $recurrenceTypeMonth['day_number'],
+                        ];
+                        break;
+
+                    case RecurrenceMode::Relative:
+                        $fields = [
+                            RecurrenceField::MonthMode->value => $recurrenceTypeMonth['mode'],
+                            RecurrenceField::MonthInterval->value => $recurrenceInterval,
+                            RecurrenceField::MonthRelativeWeekOrdinal->value => $recurrenceTypeMonth['week_ordinal'],
+                            RecurrenceField::MonthRelativeDay->value => $recurrenceTypeMonth['day'],
+                        ];
+                        break;
+                }
+
+                break;
+
+            case RecurrenceType::Year:
+                switch ($recurrenceTypeYear['mode'])
+                {
+                    case RecurrenceMode::Absolute:
+                        $fields = [
+                            RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
+                            RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_absolute'],
+                            RecurrenceField::YearAbsoluteDayNumber->value => $recurrenceTypeYear['day_number'],
+                        ];
+                        break;
+
+                    case RecurrenceMode::Relative:
+                        $fields = [
+                            RecurrenceField::YearMode->value => $recurrenceTypeYear['mode'],
+                            RecurrenceField::YearRelativeDayOrdinal->value => $recurrenceTypeYear['day_ordinal'],
+                            RecurrenceField::YearRelativeDay->value => $recurrenceTypeYear['day'],
+                            RecurrenceField::YearMonth->value => $recurrenceTypeYear['month_relative'],
+                        ];
+                        break;
+                }
+                break;
+        }
+
+        return $fields;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

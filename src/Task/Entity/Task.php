@@ -67,17 +67,17 @@ class Task implements EntityUuidInterface
     private Collection $completions;
 
     /**
-     * @var Collection<int, TaskPostpone>
+     * @var Collection<int, TaskSkip>
      */
-    #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskPostpone::class)]
-    private Collection $postpones;
+    #[ORM\OneToMany(mappedBy: 'task', targetEntity: TaskDeferral::class)]
+    private Collection $deferrals;
 
     public function __construct()
     {
         $this->recurrences = new ArrayCollection();
         $this->participants = new ArrayCollection();
         $this->completions = new ArrayCollection();
-        $this->postpones = new ArrayCollection();
+        $this->deferrals = new ArrayCollection();
     }
 
     public function setId(int $id): self
@@ -210,14 +210,14 @@ class Task implements EntityUuidInterface
         return $this;
     }
 
-    public function getPostpones(): Collection
+    public function getDeferrals(): Collection
     {
-        return $this->postpones;
+        return $this->deferrals;
     }
 
-    public function setPostpones(Collection $postpones): self
+    public function setDeferrals(Collection $skips): self
     {
-        $this->postpones = $postpones;
+        $this->deferrals = $skips;
 
         return $this;
     }

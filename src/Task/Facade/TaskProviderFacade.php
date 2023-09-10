@@ -13,6 +13,7 @@ use App\Task\Facade\Result\ResultFactory;
 use App\Task\Facade\Result\TaskOccurrences;
 use App\Task\Provider\TaskProvider;
 use App\Task\Recurrence\RecurrenceCalculator;
+use App\UserPreference\Provider\UserPreferenceProvider;
 use DateTimeInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
@@ -21,6 +22,7 @@ readonly class TaskProviderFacade implements FacadeInterface
 {
     public function __construct(
         private UserContext $userContext,
+        private UserPreferenceProvider $userPreferenceProvider,
         private TaskProvider $taskProvider,
         private RecurrenceCalculator $recurrenceCalculator,
         private DateTimeProvider $dateTimeProvider,
@@ -34,6 +36,28 @@ readonly class TaskProviderFacade implements FacadeInterface
     public function getTasksByCurrentUser(): array
     {
         return $this->taskProvider->getTasksByUser($this->userContext->getUser());
+    }
+
+    /**
+     * @return TaskOccurrences[]
+     */
+    public function getNextOccurrencesForCurrentUser(): array
+    {
+        $user = $this->userContext->getUser();
+        $timezone = $this->userPreferenceProvider->getTimezone($user)->getTimezone();
+        $dateTimezone = $this->dateTimeProvider->resolveDateTimeZone($timezone->getName());
+        $now = $this->dateTimeProvider->getNow($dateTimezone);
+        $tasks = $this->taskProvider->getTasksByUser($user);
+
+        $occurrences = [];
+
+        foreach ($tasks as $task)
+        {
+            $dates = $this->recurrenceCalculator->getRecurrence($task, $dateTimezone, 1, $now);
+            $occurrences[] = $this->resultFactory->createTaskOccurrences($task, $dates);
+        }
+
+        return $occurrences;
     }
 
     public function getOccurrences(Task|int $task, Timezone|string $timezone, int|DateTimeInterface $limit, DateTimeInterface $lowerBound = null): TaskOccurrences

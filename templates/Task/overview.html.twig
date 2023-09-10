@@ -4,10 +4,11 @@
 {% block body %}
 	<table style="margin-bottom: 50px">
 		<thead>
-			<tr>
-				<td>id</td>
-				<td>name</td>
-				<td>action</td>
+			<tr style="text-align: left">
+				<th>id</th>
+				<th>uuid</th>
+				<th>name</th>
+				<th>action</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -16,11 +17,43 @@
 				<td>{{ task.id }}</td>
 				<td>{{ task.uuid }}</td>
 				<td>{{ task.name }}</td>
-				<td><a href="{{ path('task_overview', {task: task.uuid}) }}">edit</a> {{ form(task_delete_forms[task.id], {attr: {action: path('task_delete', {task: task.uuid}), class: 'text' }}) }}</td>
+				<td>
+					<a href="{{ path('task_overview', {task: task.uuid}) }}">edit</a>
+					{{ form(task_delete_forms[task.id], {attr: {action: path('task_delete', {task: task.uuid}), class: 'text' }}) }}
+				</td>
 			</tr>
 		{% endfor %}
 		</tbody>
 	</table>
+{% if nextOccurrences is not empty %}
+	<table style="margin-bottom: 50px">
+		<thead>
+			<tr style="text-align: left">
+				<th>task</th>
+				<th>due date</th>
+				<th>action</th>
+			</tr>
+			{% for o in nextOccurrences %}
+			<tr>
+				<td>{{ o.task.name }}</td>
+				<td>
+					{% if o.occurrences|length > 0 %}
+						{{ o.occurrences|first.format('l \\t\\h\\e jS \\of F Y \\a\\t H:i') }}
+					{% else %}
+						no occurrence
+					{% endif %}
+				</td>
+				<td>
+					{{ form_start(task_postpone_forms[o.task.id], {attr: {action: path('task_postpone', {task: o.task.uuid}), class: 'text' }}) }} {{ form_widget(task_postpone_forms[o.task.id].delay)  }} {{ form_end(task_postpone_forms[o.task.id]) }}
+					{{ form(task_complete_forms[o.task.id], {attr: {action: path('task_complete', {task: o.task.uuid}), class: 'text' }}) }}
+				</td>
+			</tr>
+			{% endfor %}
+		</thead>
+	</table>
+{% else %}
+	No upcoming tasks
+{% endif %}
 {{ form_start(task_form, {'attr': {'class': 'regular'}}) }}
 <div>
 	{{ form_row(task_form.name) }}
@@ -42,7 +75,6 @@
 		{{ loop.index }}: {{ occurrence.format('Y-m-d H:i = l \\t\\h\\e jS \\of F Y \\a\\t H:i') }}<br/>
 	{% endfor %}
 {% endif %}
-	<br/><br/><br/><br/>
 {% endblock %}
 
 {% block javascripts %}

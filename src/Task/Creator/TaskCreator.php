@@ -31,9 +31,7 @@ readonly class TaskCreator
         $task = $this->createTask($owner, $name, $dateTime, $timezone, $description, $duration, $category);
 
         $this->recurrence->setForTask($task, $recurrenceStartDate, $recurrenceEndDate, $recurrence, $recurrenceParams);
-        $this->createParticipants($task, $participatingUsers);
-
-        $this->entityManager->flush();
+        $this->createParticipants($task, [$task->getOwnedBy(), ...$participatingUsers]);
 
         return $task;
     }

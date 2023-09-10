@@ -64,12 +64,12 @@ class DateTimeProvider
         return $this->create($dateTimeLocal->format('Y-m-d'), $this->createTimezoneUTC());
     }
 
-    private function createTimezoneUTC(): DateTimeZone
+    public function createTimezoneUTC(): DateTimeZone
     {
         return $this->createTimezone('UTC');
     }
 
-    private function createTimezone(string $timezone): DateTimeZone
+    public function createTimezone(string $timezone): DateTimeZone
     {
         return new DateTimeZone($timezone);
     }

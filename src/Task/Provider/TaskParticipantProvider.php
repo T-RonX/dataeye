@@ -40,4 +40,9 @@ readonly class TaskParticipantProvider
     {
         return new ArrayCollection($this->getTaskParticipants($task));
     }
+
+    public function getTaskParticipantByUser(Task $task, User $user): ?TaskParticipant
+    {
+        return $this->repository->getByTaskAndUser($task, $user);
+    }
 }
