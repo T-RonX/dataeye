@@ -57,15 +57,15 @@ readonly class TaskPostponer
                 PostponeMethod::SkipOnce => $this->createSkip($recurrence, $participant),
             },
             false => match ($method) {
-                PostponeMethod::TimeDelay => $this->postponeTask($task, $delay, $participant),
+                PostponeMethod::TimeDelay => $this->postponeTask($task, $delay, $participant, $timezone),
                 PostponeMethod::SkipOnce => $this->createSkip($task, $participant),
             },
         };
     }
 
-    private function postponeTask(Task $task, DateInterval $delay, TaskParticipant $participant): TaskPostpone
+    private function postponeTask(Task $task, DateInterval $delay, TaskParticipant $participant, DateTimeZone $timezone): TaskPostpone
     {
-        $nextOccurrence = $this->recurrenceCalculator->getRecurrence($task, $this->dateTimeProvider->createTimezoneUTC(), 1)[0] ?? null;
+        $nextOccurrence = $this->recurrenceCalculator->getRecurrence($task, $timezone, 1)[0] ?? null;
         $delayedTo = $this->calculateDelayedTo($nextOccurrence ?: $task->getDateTime(), $delay);
 
         return $this->createPostpone($task, $delayedTo, $participant);
@@ -76,7 +76,7 @@ readonly class TaskPostponer
         $occurrences = $this->recurrenceCalculator->getRecurrence($recurrence->getTask(), $timezone, 2);
         $currentOccurrence = $occurrences[0] ?? null;
         $nextOccurrence = $occurrences[1] ?? null;
-        $delayedTo = $this->calculateDelayedTo(max($this->dateTimeProvider->getNow($timezone), $currentOccurrence), $delay);
+        $delayedTo = $this->calculateDelayedTo(max($this->dateTimeProvider->getNow(), $currentOccurrence), $delay);
         $delayedIsInvalid = $delayedTo < $recurrence->getStartDate();
 
         if ($delayedIsInvalid)
@@ -121,8 +121,8 @@ readonly class TaskPostponer
 
     private function calculateDelayedTo(DateTimeInterface $sourceDate, DateInterval $delay): DateTimeInterface
     {
-        $dateTime = $sourceDate instanceof DateTimeImmutable ? $sourceDate : DateTimeImmutable::createFromInterface($sourceDate);
-
-        return $dateTime->add($delay)->setTimezone($this->dateTimeProvider->createTimezoneUTC());
+        return ($sourceDate instanceof DateTimeImmutable ? $sourceDate : DateTimeImmutable::createFromInterface($sourceDate))
+            ->add($delay)
+            ->setTimezone($this->dateTimeProvider->createTimezoneUTC());
     }
 }
