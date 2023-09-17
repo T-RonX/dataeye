@@ -19,6 +19,10 @@ class TaskCompletion
     #[ORM\JoinColumn(name: 'task', referencedColumnName: 'id', nullable: false)]
     private Task $task;
 
+    #[ORM\ManyToOne(targetEntity: TaskRecurrence::class)]
+    #[ORM\JoinColumn(name: 'recurrence_id', referencedColumnName: 'id', nullable: true)]
+    private ?TaskRecurrence $recurrence;
+
     #[ORM\ManyToOne(targetEntity: TaskParticipant::class)]
     #[ORM\JoinColumn(name: 'completion_by', referencedColumnName: 'id', nullable: false)]
     private TaskParticipant $completionBy;
@@ -47,6 +51,18 @@ class TaskCompletion
     public function setTask(Task $task): self
     {
         $this->task = $task;
+
+        return $this;
+    }
+
+    public function getRecurrence(): ?TaskRecurrence
+    {
+        return $this->recurrence;
+    }
+
+    public function setRecurrence(?TaskRecurrence $recurrence): self
+    {
+        $this->recurrence = $recurrence;
 
         return $this;
     }

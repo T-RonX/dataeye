@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Task\Facade;
 
+use App\Context\UserContext;
 use App\Facade\FacadeInterface;
 use App\Task\Completer\TaskCompleter;
 use App\Task\Entity\Task;
@@ -18,6 +19,7 @@ readonly class TaskCompleterFacade implements FacadeInterface
         private EntityManagerInterface $entityManager,
         private TaskProvider $taskProvider,
         private TaskCompleter $completer,
+        private UserContext $userContext,
     ) {
     }
 
@@ -25,7 +27,9 @@ readonly class TaskCompleterFacade implements FacadeInterface
     {
         $this->entityManager->wrapInTransaction(function() use($task): void {
             $task = $this->taskProvider->resolveTask($task);
-            $this->completer->complete($task);
+            $user = $this->userContext->getUser();
+
+            $this->completer->complete($task, $user);
         });
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Task\Factory;
 
 use App\Task\Entity\Task;
+use App\Task\Entity\TaskCompletion;
 use App\Task\Entity\TaskParticipant;
 use App\Task\Entity\TaskPostpone;
 use App\Task\Entity\TaskRecurrenceDay;
@@ -65,5 +66,10 @@ readonly class TaskFactory
     public function createTaskSkip(): TaskSkip
     {
         return new TaskSkip();
+    }
+
+    public function createTaskCompletion(): TaskCompletion
+    {
+        return new TaskCompletion();
     }
 }

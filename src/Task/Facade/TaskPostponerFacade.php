@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
  class TaskPostponerFacade implements FacadeInterface
 {
     use UserTimezoneTrait;
+
     public function __construct(
         readonly private EntityManagerInterface $entityManager,
         readonly private TaskProvider $taskProvider,
