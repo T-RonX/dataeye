@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade\Result;
+namespace App\Facades\Task\Result;
 
 use App\Task\Entity\Task;
 use DateTimeInterface;

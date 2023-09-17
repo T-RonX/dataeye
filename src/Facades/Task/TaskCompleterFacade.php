@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade;
+namespace App\Facades\Task;
 
 use App\Context\UserContext;
 use App\Facade\FacadeInterface;

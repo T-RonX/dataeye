@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade;
+namespace App\Facades\Task;
 
 use App\DateTimeProvider\DateTimeProvider;
 use App\Facade\FacadeInterface;
+use App\Facades\Task\Trait\UserTimezoneTrait;
 use App\Task\Entity\Task;
 use App\Task\Enum\PostponeMethod;
-use App\Task\Facade\Trait\UserTimezoneTrait;
 use App\Task\Postponer\TaskPostponer;
 use App\Task\Provider\TaskProvider;
 use DateInterval;

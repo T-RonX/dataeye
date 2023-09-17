@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade;
+namespace App\Facades\Task;
 
 use App\Facade\FacadeInterface;
 use App\Task\Deleter\TaskDeleter;

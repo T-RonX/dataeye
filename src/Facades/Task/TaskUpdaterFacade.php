@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade;
+namespace App\Facades\Task;
 
 use App\Facade\FacadeInterface;
+use App\Facades\Task\Trait\ArgumentResolverTrait;
+use App\Facades\Task\Trait\UserTimezoneTrait;
 use App\Task\Entity\Task;
 use App\Task\Entity\TaskCategory;
 use App\Task\Enum\RecurrenceType;
-use App\Task\Facade\Trait\ArgumentResolverTrait;
-use App\Task\Facade\Trait\UserTimezoneTrait;
 use App\Task\Provider\TaskProvider;
 use App\Task\Updater\TaskUpdater;
 use DateTimeInterface;

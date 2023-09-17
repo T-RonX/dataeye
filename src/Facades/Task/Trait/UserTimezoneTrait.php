@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade\Trait;
+namespace App\Facades\Task\Trait;
 
 use App\Context\UserContext;
 use App\Locale\Entity\Timezone;

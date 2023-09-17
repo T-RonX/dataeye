@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Facade;
+namespace App\Facades\Task;
 
 use App\Context\UserContext;
 use App\DateTimeProvider\DateTimeProvider;
 use App\Facade\FacadeInterface;
+use App\Facades\Task\Result\ResultFactory;
+use App\Facades\Task\Result\TaskOccurrences;
 use App\Locale\Entity\Timezone;
 use App\Task\Entity\Task;
-use App\Task\Facade\Result\ResultFactory;
-use App\Task\Facade\Result\TaskOccurrences;
 use App\Task\Provider\TaskProvider;
 use App\Task\Recurrence\RecurrenceCalculator;
 use App\UserPreference\Provider\UserPreferenceProvider;
