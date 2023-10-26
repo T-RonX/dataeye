@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Facades\Task;
 
-use App\Facade\FacadeInterface;
+use App\CliAccess\CliAccessInterface;
 use App\Facades\Task\Trait\ArgumentResolverTrait;
 use App\Facades\Task\Trait\UserTimezoneTrait;
 use App\Task\Entity\Task;
@@ -17,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 #[AsTaggedItem('task-updater')]
-class TaskUpdaterFacade implements FacadeInterface
+class TaskUpdaterFacade implements CliAccessInterface
 {
     use ArgumentResolverTrait;
     use UserTimezoneTrait;

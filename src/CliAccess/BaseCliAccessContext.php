@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Facade;
+namespace App\CliAccess;
 
 use Symfony\Component\Console\Input\InputOption;
 
-abstract readonly class BaseFacadeContext implements FacadeContextInterface
+abstract readonly class BaseCliAccessContext implements CliAccessContextInterface
 {
     public function getOptionDescription(): string
     {

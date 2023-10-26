@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\User;
 
-use App\Facade\FacadeInterface;
+use App\CliAccess\CliAccessInterface;
 use App\Task\Entity\Task;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 #[AsTaggedItem('user')]
-readonly class UserHandler implements FacadeInterface
+readonly class UserHandler implements CliAccessInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,

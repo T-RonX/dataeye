@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Facades\Task;
 
+use App\CliAccess\CliAccessInterface;
 use App\DateTimeProvider\DateTimeProvider;
-use App\Facade\FacadeInterface;
 use App\Facades\Task\Trait\UserTimezoneTrait;
 use App\Task\Entity\Task;
 use App\Task\Enum\PostponeMethod;
@@ -16,7 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 #[AsTaggedItem('task-postponer')]
- class TaskPostponerFacade implements FacadeInterface
+ class TaskPostponerFacade implements CliAccessInterface
 {
     use UserTimezoneTrait;
 

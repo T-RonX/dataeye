@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Facade;
+namespace App\CliAccess;
 
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-#[AutoconfigureTag('app.facade')]
-interface FacadeInterface
+#[AutoconfigureTag('app.cli_access')]
+interface CliAccessInterface
 {
 }

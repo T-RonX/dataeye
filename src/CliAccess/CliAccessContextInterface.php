@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Facade;
+namespace App\CliAccess;
 
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-#[AutoconfigureTag('app.facade.context')]
-interface FacadeContextInterface
+#[AutoconfigureTag('app.cli_access.context')]
+interface CliAccessContextInterface
 {
     public function getOptionName(): string;
 

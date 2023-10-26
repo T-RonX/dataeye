@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Facades\Task;
 
+use App\CliAccess\CliAccessInterface;
 use App\Context\UserContext;
 use App\DateTimeProvider\DateTimeProvider;
-use App\Facade\FacadeInterface;
 use App\Facades\Task\Result\ResultFactory;
 use App\Facades\Task\Result\TaskOccurrences;
 use App\Locale\Entity\Timezone;
@@ -18,7 +18,7 @@ use DateTimeInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 #[AsTaggedItem('task-provider')]
-readonly class TaskProviderFacade implements FacadeInterface
+readonly class TaskProviderFacade implements CliAccessInterface
 {
     public function __construct(
         private UserContext $userContext,

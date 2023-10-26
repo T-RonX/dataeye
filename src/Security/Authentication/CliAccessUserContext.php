@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Security\Authentication;
 
+use App\CliAccess\BaseCliAccessContext;
 use App\Exception\ItemNotFoundException;
-use App\Facade\BaseFacadeContext;
 use App\User\Entity\User;
 use App\User\Provider\UserProvider;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-readonly class FacadeUserContext extends BaseFacadeContext
+readonly class CliAccessUserContext extends BaseCliAccessContext
 {
     public function __construct(
         private UserProvider $userProvider,

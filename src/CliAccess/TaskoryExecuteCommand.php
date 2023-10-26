@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Facade;
+namespace App\CliAccess;
 
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -18,19 +18,19 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 class TaskoryExecuteCommand extends Command
 {
     /**
-     * @param iterable|FacadeContextInterface[] $contexts
+     * @param iterable|CliAccessContextInterface[] $contexts
      */
     public function __construct(
-        #[TaggedLocator('app.facade')] private readonly ServiceLocator $facades,
-        #[TaggedIterator('app.facade.context')] private readonly iterable $contexts,
+        #[TaggedLocator('app.cli_access')] private readonly ServiceLocator $cliAccess,
+        #[TaggedIterator('app.cli_access.context')] private readonly iterable $contexts,
     ) {
         parent::__construct('taskory:execute');
     }
 
     public function configure(): void
     {
-        $this->addArgument('facade', InputArgument::REQUIRED, 'Facade to call a method on.')
-            ->addArgument('method', InputArgument::REQUIRED, 'Method to call on the facade.')
+        $this->addArgument('object', InputArgument::REQUIRED, 'Object to call a method on.')
+            ->addArgument('method', InputArgument::REQUIRED, 'Method to call on the object.')
             ->addArgument('arguments', InputArgument::IS_ARRAY, 'Method arguments to pass on.');
 
         foreach ($this->contexts as $context)
@@ -47,19 +47,19 @@ class TaskoryExecuteCommand extends Command
 
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $facadeArgument = $input->getArgument('facade');
+        $objectArgument = $input->getArgument('object');
         $method = $input->getArgument('method');
         $argumentsArgument = $input->getArgument('arguments');
 
-        $facade = $this->getFacade($facadeArgument);
-        $this->validateMethod($facade, $method);
+        $object = $this->getCliAccessObject($objectArgument);
+        $this->validateMethod($object, $method);
         $arguments = $this->prepareArguments($argumentsArgument);
 
         $this->handleContexts($input);
 
-        $result = $facade->$method(...$arguments);
+        $result = $object->$method(...$arguments);
 
-        if ($this->isValueReturned($facade, $method))
+        if ($this->isValueReturned($object, $method))
         {
             dump($result);
         }
@@ -67,29 +67,29 @@ class TaskoryExecuteCommand extends Command
         return 0;
     }
 
-    private function getFacade(string $facadeName): FacadeInterface
+    private function getCliAccessObject(string $cliAccessObjectName): CliAccessInterface
     {
-        if (!$this->facades->has($facadeName))
+        if (!$this->cliAccess->has($cliAccessObjectName))
         {
-            $facadesRegistered = implode(', ', array_keys($this->facades->getProvidedServices()));
-            throw new RuntimeException("Facade '$facadeName' is not registered. The following facades are registered: $facadesRegistered");
+            $objectsRegistered = implode(', ', array_keys($this->cliAccess->getProvidedServices()));
+            throw new RuntimeException("Object '$cliAccessObjectName' is not registered. The following objects are registered: $objectsRegistered");
         }
 
-        return $this->facades->get($facadeName);
+        return $this->cliAccess->get($cliAccessObjectName);
     }
 
-    private function validateMethod(FacadeInterface $facade, string $method): void
+    private function validateMethod(CliAccessInterface $object, string $method): void
     {
-        if (!method_exists($facade, $method))
+        if (!method_exists($object, $method))
         {
-            $facadeClass = get_class($facade);
-            throw new RuntimeException("Method '$method' does not exist or is not accessible on facade '$facadeClass'.");
+            $objectClass = get_class($object);
+            throw new RuntimeException("Method '$method' does not exist or is not accessible on class '$objectClass'.");
         }
     }
 
-    private function isValueReturned(FacadeInterface $facade, string $method): bool
+    private function isValueReturned(CliAccessInterface $object, string $method): bool
     {
-        $methodMeta = new ReflectionMethod($facade, $method);
+        $methodMeta = new ReflectionMethod($object, $method);
         $returnType = $methodMeta->getReturnType();
 
         return !($returnType instanceof ReflectionNamedType && in_array($returnType->getName(), ['void', 'never']));
