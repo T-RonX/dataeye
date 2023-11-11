@@ -21,7 +21,7 @@ class TaskoryExecuteCommand extends Command
      * @param iterable|CliAccessContextInterface[] $contexts
      */
     public function __construct(
-        #[TaggedLocator('app.cli_access')] private readonly ServiceLocator $cliAccess,
+        #[TaggedLocator('app.cli_access')] private readonly ServiceLocator $cliAccessLocator,
         #[TaggedIterator('app.cli_access.context')] private readonly iterable $contexts,
     ) {
         parent::__construct('taskory:execute');
@@ -69,13 +69,13 @@ class TaskoryExecuteCommand extends Command
 
     private function getCliAccessObject(string $cliAccessObjectName): CliAccessInterface
     {
-        if (!$this->cliAccess->has($cliAccessObjectName))
+        if (!$this->cliAccessLocator->has($cliAccessObjectName))
         {
-            $objectsRegistered = implode(', ', array_keys($this->cliAccess->getProvidedServices()));
+            $objectsRegistered = implode(', ', array_keys($this->cliAccessLocator->getProvidedServices()));
             throw new RuntimeException("Object '$cliAccessObjectName' is not registered. The following objects are registered: $objectsRegistered");
         }
 
-        return $this->cliAccess->get($cliAccessObjectName);
+        return $this->cliAccessLocator->get($cliAccessObjectName);
     }
 
     private function validateMethod(CliAccessInterface $object, string $method): void
